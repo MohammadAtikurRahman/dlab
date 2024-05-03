@@ -1,0 +1,28 @@
+/* Add or ensure this exists in your CSS for the sidebar or the main content area */
+.sidebar {
+  overflow-y: auto; 
+  height: 100vh;    
+  width: 200px;
+ 
+}
+.main-content {
+  overflow-y: auto;
+  height: calc(100vh - 50px);  
+
+}
+.sidebar-header {
+  background-color: #0d6efd; /* Red background color for the header */
+  color: white; /* White text color */
+  padding: 11.5px;
+}
+
+.list-group-item {
+  cursor: pointer;
+}
+
+
+
+.list-group-item-primary {
+  background-color: #007bff; /* Customize this color as needed */
+  color: white; /* Adjust text color for better visibility if needed */
+}
