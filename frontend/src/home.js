@@ -19,7 +19,7 @@ function Home() {
   const [view, setView] = useState("pc"); // Default view is 'pc'
 
   const handleLogout = () => {
-    navigate("/login");
+    navigate("/signin");
   };
 
   const handlePCClick = () => setView("pc");
