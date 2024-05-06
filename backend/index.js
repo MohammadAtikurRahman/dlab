@@ -28,6 +28,9 @@ const { AllTime, VideoInfo,IntervalInfo } = require("./model/user.js");
 
 app.use((req, res, next) => {
     console.log(`${req.method} request for '${req.url}' from ${req.ip}`);
+
+    res.header("Access-Control-Allow-Origin", "*"); // Be more specific in production
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
 
