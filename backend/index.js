@@ -11,10 +11,15 @@ const os = require('os');
 const multer = require("multer");
 const bodyParser = require("body-parser");
 const path = require("path");
-const mongoose = require("mongoose");
+const mongoose = require("mongoose").set("debug", true);
 const csv = require('csv-parser');
 const fs = require('fs');
 mongoose.connect(process.env.MONGO_URI, {
+
+
+
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 }).then(() => console.log("MongoDB connected"))
   .catch(err => console.log(err));
 app.use(express.json({ limit: "50mb" }));
