@@ -13,6 +13,10 @@ import SchoolwiseInterval from "./schoolwiseinterval";
 import UploadPC from "./uploadpc";
 import UploadVideo from "./uploadvideo";
 import UploadInterval from "./uploadinterval";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faUserShield } from '@fortawesome/free-solid-svg-icons';
+
 
 function Home() {
   const navigate = useNavigate();
@@ -34,7 +38,12 @@ function Home() {
           className="sidebar-header "
           style={{ paddingTop: "15.5px", paddingBottom:"8px", borderBottom: "none" }}
         >
-          <h5 style={{ color: "white", marginLeft: "30px" }}>DLAB ADMIN </h5>
+          <h5 style={{ color: "white", marginLeft: "20px" }}>
+            
+          <FontAwesomeIcon icon={faUserShield} style={{ marginRight: '6px' }} />
+
+            
+            DLAB ADMIN </h5>
         </div>
         <div className="list-group text-center p-3">
           <hr></hr>
@@ -69,16 +78,19 @@ function Home() {
         <nav className="navbar navbar-expand-lg navbar-light bg-danger">
           <div className="container-fluid">
             <Link className="navbar-brand text-white" to="/home">
-            
+
             </Link>
 
             <div className="collapse navbar-collapse" id="navbarNav">
               <ul className="navbar-nav ms-auto">
                 <li className="nav-item">
+
                   <button
                     className="btn btn-link nav-link text-white"
                     onClick={handleLogout}
                   >
+            <FontAwesomeIcon icon={faSignOutAlt} style={{ marginRight: '8px' }} />
+
                     Logout
                   </button>
                 </li>
