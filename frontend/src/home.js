@@ -31,10 +31,10 @@ function Home() {
     <div className="d-flex">
       <div className="sidebar bg-dark">
         <div
-          className="sidebar-header"
-          style={{ padding: "11.5px", borderBottom: "none" }}
+          className="sidebar-header "
+          style={{ paddingTop: "15.5px", paddingBottom:"8px", borderBottom: "none" }}
         >
-          <h5 style={{ color: "white" }}>DLAB</h5>
+          <h5 style={{ color: "white", marginLeft: "30px" }}>DLAB ADMIN </h5>
         </div>
         <div className="list-group text-center p-3">
           <hr></hr>
@@ -69,7 +69,7 @@ function Home() {
         <nav className="navbar navbar-expand-lg navbar-light bg-danger">
           <div className="container-fluid">
             <Link className="navbar-brand text-white" to="/home">
-              ADMIN PANEL
+            
             </Link>
 
             <div className="collapse navbar-collapse" id="navbarNav">
