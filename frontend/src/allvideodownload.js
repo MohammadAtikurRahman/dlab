@@ -27,6 +27,36 @@ function AllVideoDownload() {
     fetchData();
   }, []);
 
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    let hours = date.getHours(); // You need to get the hours from the date object
+    const minutes = date.getMinutes();
+    const seconds = date.getSeconds();
+    const amPm = hours < 12 ? "AM" : "PM";
+
+    // Adjust 24-hour time format to 12-hour format
+    if (hours === 0) {
+      hours = 12; // Midnight case
+    } else if (hours > 12) {
+      hours -= 12; // Convert to PM time if needed
+    }
+
+    // Pad hours, minutes, and seconds with leading zeros if necessary
+    const paddedHours = hours.toString().padStart(2, "0");
+    const paddedMinutes = minutes.toString().padStart(2, "0");
+    const paddedSeconds = seconds.toString().padStart(2, "0");
+
+    // Format date with 'en-GB' locale to get "dd/mm/yyyy" format
+    const formattedDate = date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+
+    return `${formattedDate}, ${paddedHours}:${paddedMinutes}:${paddedSeconds} ${amPm}`;
+  };
+  
   const convertToCSV = useCallback((data) => {
     const headersMap = {
       video_name: "Video Name",
