@@ -17,6 +17,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { faUserShield } from "@fortawesome/free-solid-svg-icons";
 
+import Histogram from "./histogram";
+
 function Home() {
   const navigate = useNavigate();
   const [view, setView] = useState("pc"); // Default view is 'pc'
@@ -79,8 +81,7 @@ function Home() {
             className="btn list-group-item list-group-item-action"
             onClick={handleSchoolMapClick}
           >
-            Geo Location
-          </button>
+Device-specific API          </button>
 
           <hr></hr>
 
@@ -140,7 +141,11 @@ function Home() {
           ) : view === "schoolmap" ? (
             <div role="alert"></div>
           ) : view === "histogram" ? (
-            <div role="alert"></div>
+            <div role="alert">
+
+                  <Histogram/>
+
+            </div>
           ) : null}
         </div>
       </div>
