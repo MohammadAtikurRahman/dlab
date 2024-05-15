@@ -87,7 +87,7 @@ function SchoolwisePC() {
             />
 
             <ul className="list-group">
-                {Array.from(new Set(schoolData.map(item => `${item.schoolname} (EIIN: ${item.eiin})`))).map((school, index) => (
+                {Array.from(new Set(schoolData.map(item => `${item.schoolname} (EIIN: ${item.eiin})`))).reverse().map((school, index) => (
                     <li key={index} className="list-group-item list-group-item-action list-group-item-primary d-flex justify-content-between align-items-center" onClick={() => handleSearch(school)}>
                         {school}
                         <button className="btn btn-secondary" onClick={(e) => {

@@ -231,7 +231,7 @@ function SchoolwiseVideo() {
           new Set(
             videoData.map((item) => `${item.schoolname} (EIIN: ${item.eiin})`)
           )
-        ).map((video, index) => (
+        ).reverse().map((video, index) => (
           <li
             key={index}
             className="list-group-item list-group-item-action list-group-item-primary d-flex justify-content-between align-items-center"
