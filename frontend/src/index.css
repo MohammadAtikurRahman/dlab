@@ -1,4 +1,7 @@
 /* Add or ensure this exists in your CSS for the sidebar or the main content area */
+@import '~@fortawesome/fontawesome-free/css/all.min.css';
+
+
 .sidebar {
   overflow-y: auto; 
   height: 100vh;    
