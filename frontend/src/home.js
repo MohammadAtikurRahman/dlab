@@ -19,6 +19,8 @@ import { faUserShield } from "@fortawesome/free-solid-svg-icons";
 
 import Histogram from "./histogram";
 
+import Map from "./map";
+
 function Home() {
   const navigate = useNavigate();
   const [view, setView] = useState("pc"); // Default view is 'pc'
@@ -81,7 +83,8 @@ function Home() {
             className="btn list-group-item list-group-item-action"
             onClick={handleSchoolMapClick}
           >
-Device-specific API          </button>
+            School Map{" "}
+          </button>
 
           <hr></hr>
 
@@ -139,12 +142,12 @@ Device-specific API          </button>
               <SchoolwiseInterval />
             </div>
           ) : view === "schoolmap" ? (
-            <div role="alert"></div>
+            <div role="alert">
+              <Map />
+            </div>
           ) : view === "histogram" ? (
             <div role="alert">
-
-                  <Histogram/>
-
+              <Histogram />
             </div>
           ) : null}
         </div>
