@@ -83,32 +83,67 @@ app.post("/video-info", async (req, res) => {
   }
 });
 
-app.get("/get-pc", async (req, res) => {
+
+
+
+// app.get("/get-pc", async (req, res) => {
+//   try {
+//     const pcData = await AllTime.find({});
+//     res.json(pcData);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// });
+
+// // Define the 'get-video' endpoint
+// app.get("/get-video", async (req, res) => {
+//   try {
+//     const videoData = await VideoInfo.find({});
+//     res.json(videoData);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// });
+// app.get("/get-interval", async (req, res) => {
+//   try {
+//     const videoData = await IntervalInfo.find({});
+//     res.json(videoData);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// });
+
+
+app.get('/get-pc', async (req, res) => {
   try {
-    const pcData = await AllTime.find({});
+    const pcData = await AllTime.find({}).sort({ createdAt: -1 });
     res.json(pcData);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Define the 'get-video' endpoint
-app.get("/get-video", async (req, res) => {
+// Endpoint to get video data sorted by the last inserted
+app.get('/get-video', async (req, res) => {
   try {
-    const videoData = await VideoInfo.find({});
+    const videoData = await VideoInfo.find({}).sort({ createdAt: -1 });
     res.json(videoData);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
-app.get("/get-interval", async (req, res) => {
+
+// Endpoint to get interval data sorted by the last inserted
+app.get('/get-interval', async (req, res) => {
   try {
-    const videoData = await IntervalInfo.find({});
-    res.json(videoData);
+    const intervalData = await IntervalInfo.find({}).sort({ createdAt: -1 });
+    res.json(intervalData);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
+
+
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
