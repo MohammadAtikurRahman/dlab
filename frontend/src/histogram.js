@@ -158,9 +158,9 @@ const Histogram = () => {
           </div>
         </div>
         <div className="col-6 mb-3">
-          <div className="box small-box">
-            <div className="box-header">
-              <h5 className="box-title text-danger">
+          <div className="box small-box ">
+            <div className="box-header ">
+              <h5 className="box-title text-danger ">
                 <i className="fas fa-users"></i> Total PC Usages
               </h5>
             </div>
