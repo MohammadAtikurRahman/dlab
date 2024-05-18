@@ -116,33 +116,32 @@ app.post("/video-info", async (req, res) => {
 
 app.get('/get-pc', async (req, res) => {
   try {
-    const pcData = await AllTime.find({}).sort({ createdAt: -1 });
+    const pcData = await AllTime.find({}).sort({ createdAt: 1 });
     res.json(pcData);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Endpoint to get video data sorted by the last inserted
+// Endpoint to get video data sorted by the last inserted in ascending order
 app.get('/get-video', async (req, res) => {
   try {
-    const videoData = await VideoInfo.find({}).sort({ createdAt: -1 });
+    const videoData = await VideoInfo.find({}).sort({ createdAt: 1 });
     res.json(videoData);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Endpoint to get interval data sorted by the last inserted
+// Endpoint to get interval data sorted by the last inserted in ascending order
 app.get('/get-interval', async (req, res) => {
   try {
-    const intervalData = await IntervalInfo.find({}).sort({ createdAt: -1 });
+    const intervalData = await IntervalInfo.find({}).sort({ createdAt: 1 });
     res.json(intervalData);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
-
 
 
 app.use((err, req, res, next) => {
