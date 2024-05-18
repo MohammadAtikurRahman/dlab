@@ -57,7 +57,7 @@ function UploadPC() {
         <div className="container mt-5">
         <div className="input-group mb-3">
             <input type="file" className="form-control" id="inputGroupFile02" onChange={handleFileChange} accept=".csv" multiple />
-            <button className="btn btn-primary" type="button" onClick={handleUpload}>Upload CSV</button>
+            <button className="btn btn-primary" type="button" onClick={handleUpload}>Upload PC CSV</button>
         </div>
     </div>
     );
