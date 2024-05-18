@@ -1,164 +1,202 @@
-import React from 'react';
-import { Bar, Line, Pie, Radar, PolarArea, Doughnut } from 'react-chartjs-2';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  BarController,
-  LineController,
-  PieController,
-  RadarController,
-  PolarAreaController,
-  RadialLinearScale
-} from 'chart.js';
-import './histogram.css';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  BarController,
-  LineController,
-  PieController,
-  RadarController,
-  PolarAreaController,
-  RadialLinearScale
-);
-
+import React, { useState, useEffect } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./histogram.css";
+import axios from "axios";
+import ChartPc from "./chartpc";
+import ChartVideo from "./chartvideo";
 const Histogram = () => {
-  const barData = {
-    labels: ['January', 'February', 'March', 'April'],
-    datasets: [
-      {
-        label: 'pc',
-        data: [12, 19, 3, 5],
-        backgroundColor: 'rgba(75,192,192,0.4)',
-        borderColor: 'rgba(75,192,192,1)',
-        borderWidth: 1,
-      },
-    ],
-  };
+  const [data, setData] = useState([]);
+  const [activePCs, setActivePCs] = useState(0);
+  const [activeLabs, setActiveLabs] = useState(0);
+  const [totalPCUsages, setTotalPCUsages] = useState(0);
+  const [activeSchools, setActiveSchools] = useState(0);
+  const [totalDuration, setTotalDuration] = useState(0);
+  const [error, setError] = useState(null);
 
-  const lineData = {
-    labels: ['January', 'February', 'March', 'April'],
-    datasets: [
-      {
-        label: 'video',
-        data: [3, 10, 5, 2],
-        fill: false,
-        backgroundColor: 'rgba(75,192,192,0.4)',
-        borderColor: 'rgba(75,192,192,1)',
-      },
-    ],
-  };
-
-  const pieData = {
-    labels: ['Red', 'Blue', 'Yellow'],
-    datasets: [
-      {
-        data: [300, 50, 100],
-        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-        hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-      },
-    ],
-  };
-
-  const radarData = {
-    labels: ['Running', 'Swimming', 'Eating', 'Cycling'],
-    datasets: [
-      {
-        label: 'My First Dataset',
-        data: [20, 10, 4, 2],
-        fill: true,
-        backgroundColor: 'rgba(75,192,192,0.2)',
-        borderColor: 'rgba(75,192,192,1)',
-        pointBackgroundColor: 'rgba(75,192,192,1)',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgba(75,192,192,1)'
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("http://172.104.191.159:4300/get-pc");
+        const result = await response.json();
+        setData(result);
+        processData(result);
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
-    ]
-  };
+    };
 
-  const polarData = {
-    labels: ['Red', 'Green', 'Yellow', 'Grey', 'Blue'],
-    datasets: [
-      {
-        data: [11, 16, 7, 3, 14],
-        backgroundColor: [
-          '#FF6384',
-          '#4BC0C0',
-          '#FFCE56',
-          '#E7E9ED',
-          '#36A2EB'
-        ]
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchVideoData = async () => {
+      try {
+        const response = await axios.get(
+          "http://172.104.191.159:4300/get-video"
+        );
+        const data = response.data;
+
+        // Filter duplicates
+        const uniqueEntries = new Set(
+          data.map((entry) =>
+            JSON.stringify({
+              video_start_date_time: entry.video_start_date_time,
+              video_end_date_time: entry.video_end_date_time,
+              duration: entry.duration,
+            })
+          )
+        );
+
+        // Calculate total duration
+        const total = Array.from(uniqueEntries).reduce((sum, item) => {
+          const entry = JSON.parse(item);
+          return sum + entry.duration;
+        }, 0);
+
+        setTotalDuration(total);
+      } catch (error) {
+        setError("Failed to fetch video data");
       }
-    ]
+    };
+
+    fetchVideoData();
+  }, []);
+
+  const processData = (data) => {
+    const schoolData = {};
+    const uniquePCs = new Set();
+    const uniqueLabs = new Set();
+    const uniqueSchools = new Set();
+    let totalUsages = 0;
+    let totalVideoDuration = 0;
+    let latestTime = "";
+
+    data.forEach((item) => {
+      if (!schoolData[item.schoolname]) {
+        schoolData[item.schoolname] = [];
+      }
+      schoolData[item.schoolname].push(item);
+
+      uniquePCs.add(`${item.schoolname}-${item.pcname}`);
+      uniqueLabs.add(`${item.schoolname}-${item.labnum}`);
+      uniqueSchools.add(item.schoolname);
+    });
+
+    Object.keys(schoolData).forEach((school) => {
+      const schoolItems = schoolData[school];
+      const latestItem = schoolItems.reduce((latest, item) => {
+        return new Date(item.lasttime).getTime() >
+          new Date(latest.lasttime).getTime()
+          ? item
+          : latest;
+      });
+
+      totalUsages += latestItem.totaltime;
+
+      schoolItems.forEach((item) => {
+        totalVideoDuration += item.duration;
+      });
+
+      if (
+        !latestTime ||
+        new Date(latestItem.lasttime).getTime() > new Date(latestTime).getTime()
+      ) {
+        latestTime = latestItem.lasttime;
+      }
+    });
+
+    setActivePCs(uniquePCs.size);
+    setActiveLabs(uniqueLabs.size);
+    setTotalPCUsages(formatTime(totalUsages));
+    setActiveSchools(uniqueSchools.size);
   };
 
-  const doughnutData = {
-    labels: ['Red', 'Blue', 'Yellow'],
-    datasets: [
-      {
-        data: [200, 150, 50],
-        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-        hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-      },
-    ],
+  const formatTime = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${hrs} Hours ${mins} Minutes ${secs} Seconds`;
   };
 
   return (
     <div className="container mt-5">
       <div className="row">
-        <div className="col-6 mb-3">
-          <div className="box">
-            <Bar data={barData} />
+        <div className="col-4 mb-3">
+          <div className="box small-box">
+            <div className="box-header">
+              <h5 className="box-title text-primary">
+                <i className="fas fa-desktop"></i> Active PC
+              </h5>
+            </div>
+            <div className="box-content">
+              <p>{activePCs}</p>
+            </div>
+          </div>
+        </div>
+        <div className="col-4 mb-3">
+          <div className="box small-box">
+            <div className="box-header">
+              <h5 className="box-title text-success">
+                <i className="fas fa-school"></i> Active School
+              </h5>
+            </div>
+            <div className="box-content">
+              <p>{activeSchools}</p>
+            </div>
+          </div>
+        </div>
+        <div className="col-4 mb-3">
+          <div className="box small-box">
+            <div className="box-header">
+              <h5 className="box-title text-sceondary">
+                <i className="fas fa-computer"></i> Active Lab
+              </h5>
+            </div>
+            <div className="box-content">
+              <p>{activeLabs}</p>
+            </div>
           </div>
         </div>
         <div className="col-6 mb-3">
-          <div className="box">
-            <Line data={lineData} />
+          <div className="box small-box">
+            <div className="box-header">
+              <h5 className="box-title text-danger">
+                <i className="fas fa-users"></i> Total PC Usages
+              </h5>
+            </div>
+            <div className="box-content">
+              <p>{totalPCUsages}</p>
+            </div>
+          </div>
+        </div>
+        <div className="col-6 mb-3">
+          <div className="box small-box">
+            <div className="box-header">
+              <h5 className="box-title text-danger">
+                <i className="fas fa-video"></i> Total Video Time
+              </h5>
+            </div>
+            <div className="box-content">
+              {error ? (
+                <p>{error}</p>
+              ) : (
+                <p>{formatTime(totalDuration)}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="col-6 mb-3">
+          <div className="box small-box">
+            <ChartPc/>
+          </div>
+        </div>
+        <div className="col-6 mb-3">
+          <div className="box small-box">
+            <ChartVideo/>
           </div>
         </div>
       </div>
-      <div className="row">
-        <div className="col-4 mb-3">
-          <div className="box">
-            <Pie data={pieData} />
-          </div>
-        </div>
-        <div className="col-4 mb-3">
-          <div className="box">
-            <Radar data={radarData} />
-          </div>
-        </div>
-        <div className="col-4 mb-3">
-          <div className="box">
-            <PolarArea data={polarData} />
-          </div>
-        </div>
-      </div>
-      {/* <div className="row">
-        <div className="col-12 mb-3">
-          <div className="box">
-            <Doughnut data={doughnutData} />
-          </div>
-        </div>
-      </div> */}
     </div>
   );
 };
