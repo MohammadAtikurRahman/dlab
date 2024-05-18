@@ -413,35 +413,86 @@ function SchoolwiseVideo() {
     document.body.removeChild(link);
   };
 
+  // const formatDate = (dateStr) => {
+  //   const date = new Date(dateStr);
+  //   let hours = date.getHours(); // You need to get the hours from the date object
+  //   const minutes = date.getMinutes();
+  //   const seconds = date.getSeconds();
+  //   const amPm = hours < 12 ? "AM" : "PM";
+
+  //   // Adjust 24-hour time format to 12-hour format
+  //   if (hours === 0) {
+  //     hours = 12; // Midnight case
+  //   } else if (hours > 12) {
+  //     hours -= 12; // Convert to PM time if needed
+  //   }
+
+  //   // Pad hours, minutes, and seconds with leading zeros if necessary
+  //   const paddedHours = hours.toString().padStart(2, "0");
+  //   const paddedMinutes = minutes.toString().padStart(2, "0");
+  //   const paddedSeconds = seconds.toString().padStart(2, "0");
+
+  //   // Format date with 'en-GB' locale to get "dd/mm/yyyy" format
+  //   const formattedDate = date.toLocaleDateString("en-GB", {
+  //     day: "2-digit",
+  //     month: "2-digit",
+  //     year: "numeric",
+  //   });
+
+  //   return `${formattedDate}, ${paddedHours}:${paddedMinutes}:${paddedSeconds} ${amPm}`;
+  // };
+
+
+
   const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    let hours = date.getHours(); // You need to get the hours from the date object
-    const minutes = date.getMinutes();
-    const seconds = date.getSeconds();
-    const amPm = hours < 12 ? "AM" : "PM";
-
-    // Adjust 24-hour time format to 12-hour format
-    if (hours === 0) {
-      hours = 12; // Midnight case
-    } else if (hours > 12) {
-      hours -= 12; // Convert to PM time if needed
+    const isoDatePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+    if (isoDatePattern.test(dateStr)) {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        // If the date is invalid, return the original string
+        return dateStr;
+      }
+  
+      let hours = date.getHours();
+      const minutes = date.getMinutes();
+      const seconds = date.getSeconds();
+      const amPm = hours < 12 ? "AM" : "PM";
+  
+      // Adjust 24-hour time format to 12-hour format
+      if (hours === 0) {
+        hours = 12; // Midnight case
+      } else if (hours > 12) {
+        hours -= 12; // Convert to PM time if needed
+      }
+  
+      // Pad hours, minutes, and seconds with leading zeros if necessary
+      const paddedHours = hours.toString().padStart(2, "0");
+      const paddedMinutes = minutes.toString().padStart(2, "0");
+      const paddedSeconds = seconds.toString().padStart(2, "0");
+  
+      // Format date with 'en-GB' locale to get "dd/mm/yyyy" format
+      const formattedDate = date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+  
+      return `${formattedDate}, ${paddedHours}:${paddedMinutes}:${paddedSeconds} ${amPm}`;
+    } else {
+      // Extract the date part if the format is like "0.580499 16/05/2024, 10:22:09 AM"
+      const datePattern = /\b(\d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M)\b/;
+      const match = dateStr.match(datePattern);
+      if (match) {
+        return match[1];
+      }
+      return dateStr;
     }
-
-    // Pad hours, minutes, and seconds with leading zeros if necessary
-    const paddedHours = hours.toString().padStart(2, "0");
-    const paddedMinutes = minutes.toString().padStart(2, "0");
-    const paddedSeconds = seconds.toString().padStart(2, "0");
-
-    // Format date with 'en-GB' locale to get "dd/mm/yyyy" format
-    const formattedDate = date.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-
-    return `${formattedDate}, ${paddedHours}:${paddedMinutes}:${paddedSeconds} ${amPm}`;
   };
+  
+ 
+  
 
+  
   return (
     <div className="container mt-5">
       <input
