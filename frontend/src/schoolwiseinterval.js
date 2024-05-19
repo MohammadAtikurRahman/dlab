@@ -248,7 +248,7 @@ function SchoolwiseInterval() {
                 onChange={(e) => handleSearch(e.target.value)}
             />
 
-            <h3>Search Results</h3>
+            <h3 className='shadow-lg p-3 mb-5 bg-white rounded text-center'>Search Results</h3>
             <ul className="list-group mb-4">
                 {searchResults.length > 0 ? (
                     searchResults.map((school, index) => (
@@ -263,7 +263,7 @@ function SchoolwiseInterval() {
 
             {selectedSearchIntervals && selectedSearchIntervals.length > 0 && (
                 <div className="mt-4">
-                    <h3>Selected Search Interval Details</h3>
+                    <h3 className='shadow-lg p-3 mb-5 bg-white rounded text-center'>Selected Search Interval Details</h3>
                     <table className="table table-striped">
                         <thead>
                             <tr>
@@ -297,7 +297,7 @@ function SchoolwiseInterval() {
                 </div>
             )}
 
-            <h3>All Schools</h3>
+            <h3 className='shadow-lg p-3 mb-5 bg-white rounded text-center'>All Schools</h3>
             <ul className="list-group">
                 {Array.from(new Set(intervalData.map(item => item.schoolname))).reverse().map((school, index) => (
                     <li key={index} className="list-group-item list-group-item-action list-group-item-primary d-flex justify-content-between align-items-center" onClick={() => handleIntervalClick(school)}>
@@ -313,7 +313,7 @@ function SchoolwiseInterval() {
 
             {selectedIntervals && selectedIntervals.length > 0 && (
                 <div className="mt-4">
-                    <h3>Selected Interval Details</h3>
+                    <h3 className='shadow-lg p-3 mb-5 bg-white rounded text-center'  >Selected Interval Details</h3>
                     <table className="table table-striped">
                         <thead>
                             <tr>

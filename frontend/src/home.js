@@ -124,7 +124,6 @@ function Home() {
             <div role="alert">
               <UploadPC />
 
-              <br></br>
 
               <Pc />
               <Schoolwisepc />

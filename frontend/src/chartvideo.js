@@ -283,7 +283,7 @@ const ChartVideo = () => {
               backgroundColor: backgroundColors,
               borderColor: backgroundColors,
               borderWidth: 1,
-              barThickness: 65, // Set the bar width here
+              barThickness: 67.5, // Set the bar width here
             },
           ],
         });
@@ -317,7 +317,7 @@ const ChartVideo = () => {
                 plugins: {
                   title: {
                     display: true,
-                    text: 'Video Usage Time by Day',
+                    text: 'Video Usage Time by Day (Last 7 Days)',
                     font: {
                       size: 20,
                       weight: 'bold',

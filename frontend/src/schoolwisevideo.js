@@ -166,7 +166,7 @@ function SchoolwiseVideo() {
                 onChange={(e) => handleSearch(e.target.value)}
             />
 
-            <h3>Search Results</h3>
+            <h3 className='shadow-lg p-3 mb-5 bg-white rounded text-center'>Search Results</h3>
             <ul className="list-group mb-4">
                 {searchResults.length > 0 ? (
                     searchResults.map((school, index) => (
@@ -181,7 +181,7 @@ function SchoolwiseVideo() {
 
             {selectedSearchSchool && selectedSearchSchool.length > 0 && (
                 <div className="mt-4">
-                    <h3>Selected Search School Details</h3>
+                    <h3 className='shadow-lg p-3 mb-5 bg-white rounded text-center'>Selected Search School Details</h3>
                     <table className="table table-striped">
                         <thead>
                             <tr>
@@ -217,7 +217,7 @@ function SchoolwiseVideo() {
                 </div>
             )}
 
-            <h3>All Schools</h3>
+            <h3 className='shadow-lg p-3 mb-5 bg-white rounded text-center'>All Schools</h3>
             <ul className="list-group">
                 {Array.from(new Set(videoData.map(item => item.schoolname))).reverse().map((school, index) => (
                     <li
@@ -238,7 +238,7 @@ function SchoolwiseVideo() {
 
             {selectedSchool && selectedSchool.length > 0 && (
                 <div className="mt-4">
-                    <h3>Selected School Video Details</h3>
+                    <h3 className='shadow-lg p-3 mb-5 bg-white rounded text-center'>Selected School Video Details</h3>
                     <table className="table table-striped">
                         <thead>
                             <tr>
