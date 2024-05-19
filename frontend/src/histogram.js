@@ -4,6 +4,8 @@ import "./histogram.css";
 import axios from "axios";
 import ChartPc from "./chartpc";
 import ChartVideo from "./chartvideo";
+import moment from 'moment';
+
 const Histogram = () => {
   const [data, setData] = useState([]);
   const [activePCs, setActivePCs] = useState(0);
@@ -68,14 +70,22 @@ const Histogram = () => {
     const uniqueLabs = new Set();
     const uniqueSchools = new Set();
     let totalUsages = 0;
-    let totalVideoDuration = 0;
-    let latestTime = "";
 
     data.forEach((item) => {
-      if (!schoolData[item.schoolname]) {
-        schoolData[item.schoolname] = [];
+      const schoolName = item.schoolname;
+      const day = moment(item.starttime, 'DD/MM/YYYY, hh:mm:ss a').format('YYYY-MM-DD');
+
+      if (!schoolData[schoolName]) {
+        schoolData[schoolName] = {};
       }
-      schoolData[item.schoolname].push(item);
+
+      if (!schoolData[schoolName][day]) {
+        schoolData[schoolName][day] = item;
+      } else {
+        if (moment(item.lasttime, 'DD/MM/YYYY, hh:mm:ss a').isAfter(moment(schoolData[schoolName][day].lasttime, 'DD/MM/YYYY, hh:mm:ss a'))) {
+          schoolData[schoolName][day] = item;
+        }
+      }
 
       uniquePCs.add(`${item.schoolname}-${item.pcname}`);
       uniqueLabs.add(`${item.schoolname}-${item.labnum}`);
@@ -83,26 +93,9 @@ const Histogram = () => {
     });
 
     Object.keys(schoolData).forEach((school) => {
-      const schoolItems = schoolData[school];
-      const latestItem = schoolItems.reduce((latest, item) => {
-        return new Date(item.lasttime).getTime() >
-          new Date(latest.lasttime).getTime()
-          ? item
-          : latest;
+      Object.keys(schoolData[school]).forEach((day) => {
+        totalUsages += schoolData[school][day].totaltime;
       });
-
-      totalUsages += latestItem.totaltime;
-
-      schoolItems.forEach((item) => {
-        totalVideoDuration += item.duration;
-      });
-
-      if (
-        !latestTime ||
-        new Date(latestItem.lasttime).getTime() > new Date(latestTime).getTime()
-      ) {
-        latestTime = latestItem.lasttime;
-      }
     });
 
     setActivePCs(uniquePCs.size);
@@ -148,7 +141,7 @@ const Histogram = () => {
         <div className="col-4 mb-3">
           <div className="box small-box">
             <div className="box-header">
-              <h5 className="box-title text-sceondary">
+              <h5 className="box-title text-secondary">
                 <i className="fas fa-computer"></i> Active Lab
               </h5>
             </div>
@@ -158,9 +151,9 @@ const Histogram = () => {
           </div>
         </div>
         <div className="col-6 mb-3">
-          <div className="box small-box ">
-            <div className="box-header ">
-              <h5 className="box-title text-danger ">
+          <div className="box small-box">
+            <div className="box-header">
+              <h5 className="box-title text-danger">
                 <i className="fas fa-users"></i> Total PC Usages
               </h5>
             </div>
@@ -185,15 +178,14 @@ const Histogram = () => {
             </div>
           </div>
         </div>
-
         <div className="col-6 mb-3">
           <div className="box small-box">
-            <ChartPc/>
+            <ChartPc />
           </div>
         </div>
         <div className="col-6 mb-3">
           <div className="box small-box">
-            <ChartVideo/>
+            <ChartVideo />
           </div>
         </div>
       </div>
