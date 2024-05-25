@@ -40,30 +40,6 @@ app.get("/", (req, res) => {
   res.send("Welcome to the Home Page!");
 });
 
-const convertToISO = (lasttime) => {
-  if (!lasttime) return null;
-
-  const parts = lasttime.split(/[\s,]+/);
-  if (parts.length < 3) return null;
-
-  const [datePart, timePart, period] = parts;
-  const [day, month, year] = datePart.split("/");
-  if (!day || !month || !year) return null;
-
-  let [hours, minutes, seconds] = timePart.split(":");
-  if (!hours || !minutes || !seconds) return null;
-
-  if (period.toLowerCase() === "pm" && hours !== "12") {
-    hours = String(parseInt(hours, 10) + 12);
-  } else if (period.toLowerCase() === "am" && hours === "12") {
-    hours = "00";
-  }
-
-  return new Date(
-    `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000Z`
-  );
-};
-
 app.post("/pc-info", async (req, res) => {
   // Expect req.body to be an array of objects
   if (!Array.isArray(req.body)) {
@@ -107,39 +83,13 @@ app.post("/video-info", async (req, res) => {
   }
 });
 
+
+
+
 app.get("/get-pc", async (req, res) => {
   try {
     const pcData = await AllTime.find({});
-    const groupedData = {};
-
-    pcData.forEach((doc) => {
-      const data = doc._doc; // Access the actual document data
-      const isoDate = convertToISO(data.lasttime);
-      if (!isoDate) return; // Skip if conversion fails
-
-      const day = isoDate.toISOString().split("T")[0];
-      const key = `${data.eiin}-${data.labnum}-${data.pcnum}-${day}`;
-
-      if (
-        !groupedData[key] ||
-        isoDate > convertToISO(groupedData[key].lasttime)
-      ) {
-        groupedData[key] = { ...data, isoLastTime: isoDate };
-      }
-    });
-
-    let result = Object.values(groupedData);
-
-    // Sort the results by isoLastTime in descending order
-    result.sort((a, b) => b.isoLastTime - a.isoLastTime);
-
-    // Remove the temporary isoLastTime field
-    result = result.map((doc) => {
-      const { isoLastTime, ...rest } = doc;
-      return rest;
-    });
-
-    res.json(result);
+    res.json(pcData);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -162,6 +112,9 @@ app.get("/get-interval", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+
+
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
