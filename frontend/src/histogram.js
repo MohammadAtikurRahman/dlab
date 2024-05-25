@@ -14,11 +14,14 @@ const Histogram = () => {
   const [activeSchools, setActiveSchools] = useState(0);
   const [totalDuration, setTotalDuration] = useState(0);
   const [error, setError] = useState(null);
+  const baseUrl = process.env.REACT_APP_URL;
+
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://172.104.191.159:4300/get-pc");
+        const response = await fetch(`${baseUrl}/get-pc`);
         const result = await response.json();
         setData(result);
         processData(result);
@@ -33,9 +36,7 @@ const Histogram = () => {
   useEffect(() => {
     const fetchVideoData = async () => {
       try {
-        const response = await axios.get(
-          "http://172.104.191.159:4300/get-video"
-        );
+        const response = await axios.get(`${baseUrl}/get-video`);
         const data = response.data;
 
         // Filter duplicates

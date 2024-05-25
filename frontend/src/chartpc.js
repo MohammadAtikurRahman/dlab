@@ -7,11 +7,12 @@ import moment from 'moment';
 const ChartPc = () => {
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
   const [error, setError] = useState(null);
+  const baseUrl = process.env.REACT_APP_URL;
 
   useEffect(() => {
     const fetchPCData = async () => {
       try {
-        const response = await axios.get('http://172.104.191.159:4300/get-pc');
+        const response = await axios.get(`${baseUrl}/get-pc`);
         const data = response.data;
         console.log("Fetched Data:", data);
 
