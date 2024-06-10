@@ -4,7 +4,6 @@ const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose").set("debug", true);
-
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -12,7 +11,6 @@ mongoose
   })
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
-
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
@@ -142,18 +140,11 @@ app.post("/video-info", async (req, res) => {
 
 app.get("/get-pc", async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    const pcData = await AllTime.find({})
-      .skip(skip)
-      .limit(limit)
-      .lean();
-
+    const pcData = await AllTime.find({});
     const groupedData = {};
+
     pcData.forEach((doc) => {
-      const data = doc; // Lean returns plain objects
+      const data = doc._doc; // Access the actual document data
       const isoDate = convertToISO(data.lasttime);
       if (!isoDate) return; // Skip if conversion fails
 
@@ -187,14 +178,7 @@ app.get("/get-pc", async (req, res) => {
 
 app.get("/get-video", async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    const videoData = await VideoInfo.find({})
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    const videoData = await VideoInfo.find({});
 
     // Preprocess date fields to ensure consistent formatting
     const processedData = videoData.map((doc) => {
@@ -261,18 +245,10 @@ app.get("/get-video", async (req, res) => {
 
 app.get("/get-interval", async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    const intervalData = await IntervalInfo.find({})
-      .skip(skip)
-      .limit(limit)
-      .lean();
-
+    const intervalData = await IntervalInfo.find({});
     const enrichedData = intervalData
       .map((doc) => {
-        const data = doc; // Lean returns plain objects
+        const data = doc._doc; // Access the actual document data
         const isoDate = convertToISO(data.lasttime);
         return { ...data, isoLastTime: isoDate };
       })
