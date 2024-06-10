@@ -138,172 +138,37 @@ app.post("/video-info", async (req, res) => {
   }
 });
 
-// app.get("/get-pc", async (req, res) => {
-//   try {
-//     const pcData = await AllTime.find({});
-//     const groupedData = {};
-
-//     pcData.forEach((doc) => {
-//       const data = doc._doc; // Access the actual document data
-//       const isoDate = convertToISO(data.lasttime);
-//       if (!isoDate) return; // Skip if conversion fails
-
-//       const day = isoDate.toISOString().split("T")[0];
-//       const key = `${data.eiin}-${data.labnum}-${data.pcnum}-${day}`;
-
-//       if (
-//         !groupedData[key] ||
-//         isoDate > convertToISO(groupedData[key].lasttime)
-//       ) {
-//         groupedData[key] = { ...data, isoLastTime: isoDate };
-//       }
-//     });
-
-//     let result = Object.values(groupedData);
-
-//     // Sort the results by isoLastTime in descending order
-//     result.sort((a, b) => b.isoLastTime - a.isoLastTime);
-
-//     // Remove the temporary isoLastTime field
-//     result = result.map((doc) => {
-//       const { isoLastTime, ...rest } = doc;
-//       return rest;
-//     });
-
-//     res.json(result);
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// });
-
-// app.get("/get-video", async (req, res) => {
-//   try {
-//     const videoData = await VideoInfo.find({});
-
-//     // Preprocess date fields to ensure consistent formatting
-//     const processedData = videoData.map((doc) => {
-//       if (
-//         doc.video_start_date_time &&
-//         doc.video_start_date_time.match(
-//           /^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/
-//         )
-//       ) {
-//         doc.video_start_date_time = parseCustomDate(doc.video_start_date_time);
-//       }
-//       if (
-//         doc.video_end_date_time &&
-//         doc.video_end_date_time.match(
-//           /^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/
-//         )
-//       ) {
-//         doc.video_end_date_time = parseCustomDate(doc.video_end_date_time);
-//       }
-//       return doc;
-//     });
-
-//     // Create a temporary collection with processed data
-//     await mongoose.connection.db
-//       .collection("TempVideoInfo")
-//       .insertMany(processedData);
-
-//     // Aggregate the data to remove duplicates and sort by video_end_date_time
-//     const aggregatedData = await mongoose.connection.db
-//       .collection("TempVideoInfo")
-//       .aggregate([
-//         {
-//           $group: {
-//             _id: {
-//               schoolname: "$schoolname",
-//               video_name: "$video_name",
-//               video_start: "$video_start",
-//               video_end: "$video_end",
-//               video_start_date_time: "$video_start_date_time",
-//               video_end_date_time: "$video_end_date_time",
-//               labnum: "$labnum",
-//               pcnum: "$pcnum",
-//             },
-//             doc: { $first: "$$ROOT" },
-//           },
-//         },
-//         {
-//           $replaceRoot: { newRoot: "$doc" },
-//         },
-//         {
-//           $sort: { video_end_date_time: -1 },
-//         },
-//       ])
-//       .toArray();
-
-//     // Clean up temporary collection
-//     await mongoose.connection.db.collection("TempVideoInfo").drop();
-
-//     res.json(aggregatedData);
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// });
-
-// app.get("/get-interval", async (req, res) => {
-//   try {
-//     const intervalData = await IntervalInfo.find({});
-//     const enrichedData = intervalData
-//       .map((doc) => {
-//         const data = doc._doc; // Access the actual document data
-//         const isoDate = convertToISO(data.lasttime);
-//         return { ...data, isoLastTime: isoDate };
-//       })
-//       .filter((doc) => doc.isoLastTime !== null);
-
-//     // Sort the results by isoLastTime in descending order
-//     enrichedData.sort((a, b) => b.isoLastTime - a.isoLastTime);
-
-//     // Filter out entries with duplicate totaltime values
-//     const uniqueTotaltimeData = [];
-//     const seenTotaltime = new Set();
-
-//     enrichedData.forEach((doc) => {
-//       if (!seenTotaltime.has(doc.totaltime)) {
-//         uniqueTotaltimeData.push(doc);
-//         seenTotaltime.add(doc.totaltime);
-//       }
-//     });
-
-//     // Remove the temporary isoLastTime field
-//     const result = uniqueTotaltimeData.map((doc) => {
-//       const { isoLastTime, ...rest } = doc;
-//       return rest;
-//     });
-
-//     res.json(result);
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// });
-
-
-
-
 app.get("/get-pc", async (req, res) => {
   try {
-    const pcData = await AllTime.find({}).lean(); // Use lean() for faster queries
+    const pcData = await AllTime.find({});
+    const groupedData = {};
 
-    const groupedData = pcData.reduce((acc, data) => {
+    pcData.forEach((doc) => {
+      const data = doc._doc; // Access the actual document data
       const isoDate = convertToISO(data.lasttime);
-      if (!isoDate) return acc;
+      if (!isoDate) return; // Skip if conversion fails
 
       const day = isoDate.toISOString().split("T")[0];
       const key = `${data.eiin}-${data.labnum}-${data.pcnum}-${day}`;
 
-      if (!acc[key] || isoDate > convertToISO(acc[key].lasttime)) {
-        acc[key] = { ...data, isoLastTime: isoDate };
+      if (
+        !groupedData[key] ||
+        isoDate > convertToISO(groupedData[key].lasttime)
+      ) {
+        groupedData[key] = { ...data, isoLastTime: isoDate };
       }
-
-      return acc;
-    }, {});
+    });
 
     let result = Object.values(groupedData);
+
+    // Sort the results by isoLastTime in descending order
     result.sort((a, b) => b.isoLastTime - a.isoLastTime);
-    result = result.map(({ isoLastTime, ...rest }) => rest);
+
+    // Remove the temporary isoLastTime field
+    result = result.map((doc) => {
+      const { isoLastTime, ...rest } = doc;
+      return rest;
+    });
 
     res.json(result);
   } catch (err) {
@@ -313,85 +178,107 @@ app.get("/get-pc", async (req, res) => {
 
 app.get("/get-video", async (req, res) => {
   try {
-    const videoData = await VideoInfo.find({}).lean(); // Use lean() for faster queries
+    const videoData = await VideoInfo.find({});
 
+    // Preprocess date fields to ensure consistent formatting
     const processedData = videoData.map((doc) => {
-      if (doc.video_start_date_time && doc.video_start_date_time.match(/^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/)) {
+      if (
+        doc.video_start_date_time &&
+        doc.video_start_date_time.match(
+          /^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/
+        )
+      ) {
         doc.video_start_date_time = parseCustomDate(doc.video_start_date_time);
       }
-      if (doc.video_end_date_time && doc.video_end_date_time.match(/^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/)) {
+      if (
+        doc.video_end_date_time &&
+        doc.video_end_date_time.match(
+          /^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/
+        )
+      ) {
         doc.video_end_date_time = parseCustomDate(doc.video_end_date_time);
       }
       return doc;
     });
 
-    const aggregatedData = await VideoInfo.aggregate([
-      {
-        $match: {
-          video_end_date_time: { $ne: null },
-          video_start_date_time: { $ne: null },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            schoolname: "$schoolname",
-            video_name: "$video_name",
-            video_start: "$video_start",
-            video_end: "$video_end",
-            video_start_date_time: "$video_start_date_time",
-            video_end_date_time: "$video_end_date_time",
-            labnum: "$labnum",
-            pcnum: "$pcnum",
+    // Create a temporary collection with processed data
+    await mongoose.connection.db
+      .collection("TempVideoInfo")
+      .insertMany(processedData);
+
+    // Aggregate the data to remove duplicates and sort by video_end_date_time
+    const aggregatedData = await mongoose.connection.db
+      .collection("TempVideoInfo")
+      .aggregate([
+        {
+          $group: {
+            _id: {
+              schoolname: "$schoolname",
+              video_name: "$video_name",
+              video_start: "$video_start",
+              video_end: "$video_end",
+              video_start_date_time: "$video_start_date_time",
+              video_end_date_time: "$video_end_date_time",
+              labnum: "$labnum",
+              pcnum: "$pcnum",
+            },
+            doc: { $first: "$$ROOT" },
           },
-          doc: { $first: "$$ROOT" },
         },
-      },
-      {
-        $replaceRoot: { newRoot: "$doc" },
-      },
-      {
-        $sort: { video_end_date_time: -1 },
-      },
-    ]);
+        {
+          $replaceRoot: { newRoot: "$doc" },
+        },
+        {
+          $sort: { video_end_date_time: -1 },
+        },
+      ])
+      .toArray();
+
+    // Clean up temporary collection
+    await mongoose.connection.db.collection("TempVideoInfo").drop();
 
     res.json(aggregatedData);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
+
 app.get("/get-interval", async (req, res) => {
   try {
-    const intervalData = await IntervalInfo.find({}).lean(); // Use lean() for faster queries
+    const intervalData = await IntervalInfo.find({});
+    const enrichedData = intervalData
+      .map((doc) => {
+        const data = doc._doc; // Access the actual document data
+        const isoDate = convertToISO(data.lasttime);
+        return { ...data, isoLastTime: isoDate };
+      })
+      .filter((doc) => doc.isoLastTime !== null);
 
-    const enrichedData = intervalData.map((data) => {
-      const isoDate = convertToISO(data.lasttime);
-      return { ...data, isoLastTime: isoDate };
-    }).filter((data) => data.isoLastTime !== null);
-
+    // Sort the results by isoLastTime in descending order
     enrichedData.sort((a, b) => b.isoLastTime - a.isoLastTime);
 
-    const uniqueTotaltimeData = enrichedData.reduce((acc, doc) => {
-      if (!acc.seenTotaltime.has(doc.totaltime)) {
-        acc.uniqueData.push(doc);
-        acc.seenTotaltime.add(doc.totaltime);
-      }
-      return acc;
-    }, { uniqueData: [], seenTotaltime: new Set() }).uniqueData;
+    // Filter out entries with duplicate totaltime values
+    const uniqueTotaltimeData = [];
+    const seenTotaltime = new Set();
 
-    const result = uniqueTotaltimeData.map(({ isoLastTime, ...rest }) => rest);
+    enrichedData.forEach((doc) => {
+      if (!seenTotaltime.has(doc.totaltime)) {
+        uniqueTotaltimeData.push(doc);
+        seenTotaltime.add(doc.totaltime);
+      }
+    });
+
+    // Remove the temporary isoLastTime field
+    const result = uniqueTotaltimeData.map((doc) => {
+      const { isoLastTime, ...rest } = doc;
+      return rest;
+    });
 
     res.json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
-
-
-
-
-
-
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
