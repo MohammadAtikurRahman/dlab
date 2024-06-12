@@ -3,8 +3,8 @@ const ExportController = require('../controllers/ExportController'); // Adjust t
 
 const router = express.Router();
 
-router.get('/export/alltimes', (req, res) => {
-  return ExportController.serveZipFile(req, res);
+router.get('/export/:collectionName', (req, res) => {
+  return ExportController.exportColletion(req, res);
 });
 
 module.exports = router;
