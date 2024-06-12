@@ -4,3 +4,4 @@ mongoexport --collection=alltimes --db=dlab --type=csv --fields=dayid,starttime,
 zip "${filename}.zip" "${filename}.csv"
 
 mv "$filename.zip" ../static
+rm "$filename.csv"
