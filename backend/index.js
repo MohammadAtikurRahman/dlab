@@ -18,6 +18,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const { AllTime, VideoInfo, IntervalInfo } = require("./model/user.js");
 
+const exportRoutes = require('./routes/exportRoutes'); // Adjust the path as needed
+app.use(exportRoutes)
+
 app.use((req, res, next) => {
   console.log(`${req.method} request for '${req.url}' from ${req.ip}`);
   res.header("Access-Control-Allow-Origin", "*"); // Be more specific in production
