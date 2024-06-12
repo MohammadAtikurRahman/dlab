@@ -4,7 +4,7 @@ const ExportController = require('../controllers/ExportController'); // Adjust t
 const router = express.Router();
 
 router.get('/export/alltimes', (req, res) => {
-  ExportController.exportAndZip(req, res);
+  return ExportController.serveZipFile(req, res);
 });
 
 module.exports = router;
