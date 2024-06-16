@@ -1,7 +1,10 @@
-#!/bin/bash
-#timestamp=$(date +"%Y%m%d_%H%M%S")
+#!/usr/bin/bash
+
+mydir=$(dirname $0) && cd $mydir
 filename="intervalinfos"
+
 mongoexport --collection=intervalinfos --db=dlab-database1 --type=csv --fields=dayid,starttime,totaltime,lasttime,pcname,eiin,schoolname,labnum,pcnum --out "$filename.csv"
 zip "${filename}.zip" "${filename}.csv"
-mv "$HOME/$filename.zip" $DLAB_EXPORT_DIRECTORY
-rm "$HOME/$filename.csv"
+
+mv "$filename.zip" ../static
+rm "$filename.csv"
