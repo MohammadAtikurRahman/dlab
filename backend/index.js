@@ -479,6 +479,74 @@ app.get('/get-pc', cacheMiddleware('get-pc'), async (req, res) => {
   }
 });
 
+// app.get('/get-video', cacheMiddleware('get-video'), async (req, res) => {
+//   try {
+//     const videoData = await VideoInfo.find({}).lean().exec(); // Use lean() to improve performance
+
+//     // Preprocess date fields to ensure consistent formatting
+//     const processedData = videoData.map((doc) => {
+//       if (
+//         doc.video_start_date_time &&
+//         doc.video_start_date_time.match(
+//           /^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/
+//         )
+//       ) {
+//         doc.video_start_date_time = parseCustomDate(doc.video_start_date_time);
+//       }
+//       if (
+//         doc.video_end_date_time &&
+//         doc.video_end_date_time.match(
+//           /^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/
+//         )
+//       ) {
+//         doc.video_end_date_time = parseCustomDate(doc.video_end_date_time);
+//       }
+//       return doc;
+//     });
+
+//     // Create a temporary collection with processed data
+//     await mongoose.connection.db
+//       .collection('TempVideoInfo')
+//       .insertMany(processedData);
+
+//     // Aggregate the data to remove duplicates and sort by video_end_date_time
+//     const aggregatedData = await mongoose.connection.db
+//       .collection('TempVideoInfo')
+//       .aggregate([
+//         {
+//           $group: {
+//             _id: {
+//               schoolname: '$schoolname',
+//               video_name: '$video_name',
+//               video_start: '$video_start',
+//               video_end: '$video_end',
+//               video_start_date_time: '$video_start_date_time',
+//               video_end_date_time: '$video_end_date_time',
+//               labnum: '$labnum',
+//               pcnum: '$pcnum',
+//             },
+//             doc: { $first: '$$ROOT' },
+//           },
+//         },
+//         {
+//           $replaceRoot: { newRoot: '$doc' },
+//         },
+//         {
+//           $sort: { video_end_date_time: -1 },
+//         },
+//       ])
+//       .toArray();
+
+//     // Clean up temporary collection
+//     await mongoose.connection.db.collection('TempVideoInfo').drop();
+
+//     res.json(aggregatedData);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// });
+
+
 app.get('/get-video', cacheMiddleware('get-video'), async (req, res) => {
   try {
     const videoData = await VideoInfo.find({}).lean().exec(); // Use lean() to improve performance
@@ -504,47 +572,39 @@ app.get('/get-video', cacheMiddleware('get-video'), async (req, res) => {
       return doc;
     });
 
-    // Create a temporary collection with processed data
-    await mongoose.connection.db
-      .collection('TempVideoInfo')
-      .insertMany(processedData);
-
     // Aggregate the data to remove duplicates and sort by video_end_date_time
-    const aggregatedData = await mongoose.connection.db
-      .collection('TempVideoInfo')
-      .aggregate([
-        {
-          $group: {
-            _id: {
-              schoolname: '$schoolname',
-              video_name: '$video_name',
-              video_start: '$video_start',
-              video_end: '$video_end',
-              video_start_date_time: '$video_start_date_time',
-              video_end_date_time: '$video_end_date_time',
-              labnum: '$labnum',
-              pcnum: '$pcnum',
-            },
-            doc: { $first: '$$ROOT' },
+    const aggregatedData = await VideoInfo.aggregate([
+      {
+        $group: {
+          _id: {
+            schoolname: '$schoolname',
+            video_name: '$video_name',
+            video_start: '$video_start',
+            video_end: '$video_end',
+            video_start_date_time: '$video_start_date_time',
+            video_end_date_time: '$video_end_date_time',
+            labnum: '$labnum',
+            pcnum: '$pcnum',
           },
+          doc: { $first: '$$ROOT' },
         },
-        {
-          $replaceRoot: { newRoot: '$doc' },
-        },
-        {
-          $sort: { video_end_date_time: -1 },
-        },
-      ])
-      .toArray();
-
-    // Clean up temporary collection
-    await mongoose.connection.db.collection('TempVideoInfo').drop();
+      },
+      {
+        $replaceRoot: { newRoot: '$doc' },
+      },
+      {
+        $sort: { video_end_date_time: -1 },
+      },
+    ]);
 
     res.json(aggregatedData);
   } catch (err) {
+    console.error('Error fetching video data:', err.message);
     res.status(500).json({ message: err.message });
   }
 });
+
+
 
 app.get('/get-interval', cacheMiddleware('get-interval'), async (req, res) => {
   try {
