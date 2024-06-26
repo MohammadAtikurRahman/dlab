@@ -355,10 +355,31 @@ app.get('/', (req, res) => {
 });
 
 // Redis caching middleware
+// const cacheMiddleware = (key) => async (req, res, next) => {
+//   try {
+//     const cachedData = await redisClient.get(key);
+//     if (cachedData) {
+//       return res.json(JSON.parse(cachedData));
+//     }
+//     res.sendResponse = res.json;
+//     res.json = (body) => {
+//       redisClient.set(key, JSON.stringify(body), 'EX', 3600); // Cache for 1 hour
+//       res.sendResponse(body);
+//     };
+//     next();
+//   } catch (error) {
+//     console.error('Redis error:', error);
+//     next();
+//   }
+// };
+
+
+
 const cacheMiddleware = (key) => async (req, res, next) => {
   try {
     const cachedData = await redisClient.get(key);
     if (cachedData) {
+      console.log('Serving from cache');
       return res.json(JSON.parse(cachedData));
     }
     res.sendResponse = res.json;
@@ -372,6 +393,10 @@ const cacheMiddleware = (key) => async (req, res, next) => {
     next();
   }
 };
+
+
+
+
 
 // Example endpoint to test Redis connection
 app.get('/redis-test', async (req, res) => {
@@ -549,61 +574,74 @@ app.get('/get-pc', cacheMiddleware('get-pc'), async (req, res) => {
 
 app.get('/get-video', cacheMiddleware('get-video'), async (req, res) => {
   try {
-    const videoData = await VideoInfo.find({}).lean().exec(); // Use lean() to improve performance
-
-    // Preprocess date fields to ensure consistent formatting
-    const processedData = videoData.map((doc) => {
-      if (
-        doc.video_start_date_time &&
-        doc.video_start_date_time.match(
-          /^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/
-        )
-      ) {
-        doc.video_start_date_time = parseCustomDate(doc.video_start_date_time);
-      }
-      if (
-        doc.video_end_date_time &&
-        doc.video_end_date_time.match(
-          /^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/
-        )
-      ) {
-        doc.video_end_date_time = parseCustomDate(doc.video_end_date_time);
-      }
-      return doc;
-    });
-
-    // Aggregate the data to remove duplicates and sort by video_end_date_time
-    const aggregatedData = await VideoInfo.aggregate([
+    const videoData = await VideoInfo.aggregate([
+      {
+        $addFields: {
+          video_start_date_time: {
+            $cond: {
+              if: {
+                $regexMatch: {
+                  input: "$video_start_date_time",
+                  regex: /^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/
+                }
+              },
+              then: {
+                $dateFromString: {
+                  dateString: "$video_start_date_time",
+                  format: "%m/%d/%Y, %I:%M:%S %p"
+                }
+              },
+              else: "$video_start_date_time"
+            }
+          },
+          video_end_date_time: {
+            $cond: {
+              if: {
+                $regexMatch: {
+                  input: "$video_end_date_time",
+                  regex: /^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/
+                }
+              },
+              then: {
+                $dateFromString: {
+                  dateString: "$video_end_date_time",
+                  format: "%m/%d/%Y, %I:%M:%S %p"
+                }
+              },
+              else: "$video_end_date_time"
+            }
+          }
+        }
+      },
       {
         $group: {
           _id: {
-            schoolname: '$schoolname',
-            video_name: '$video_name',
-            video_start: '$video_start',
-            video_end: '$video_end',
-            video_start_date_time: '$video_start_date_time',
-            video_end_date_time: '$video_end_date_time',
-            labnum: '$labnum',
-            pcnum: '$pcnum',
+            schoolname: "$schoolname",
+            video_name: "$video_name",
+            video_start: "$video_start",
+            video_end: "$video_end",
+            video_start_date_time: "$video_start_date_time",
+            video_end_date_time: "$video_end_date_time",
+            labnum: "$labnum",
+            pcnum: "$pcnum"
           },
-          doc: { $first: '$$ROOT' },
-        },
+          doc: { $first: "$$ROOT" }
+        }
       },
       {
-        $replaceRoot: { newRoot: '$doc' },
+        $replaceRoot: { newRoot: "$doc" }
       },
       {
-        $sort: { video_end_date_time: -1 },
-      },
-    ]);
+        $sort: { video_end_date_time: -1 }
+      }
+    ]).exec();
 
-    res.json(aggregatedData);
+    res.json(videoData);
   } catch (err) {
     console.error('Error fetching video data:', err.message);
     res.status(500).json({ message: err.message });
   }
 });
-
 
 
 app.get('/get-interval', cacheMiddleware('get-interval'), async (req, res) => {
