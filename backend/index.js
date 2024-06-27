@@ -343,9 +343,10 @@ app.get('/', (req, res) => {
 const cacheMiddleware = (key) => (req, res, next) => {
   const cachedData = cache.get(key);
   if (cachedData) {
-    console.log('Serving from cache');
+    console.log(`Cache hit for key: ${key}`);
     return res.json(cachedData);
   }
+  console.log(`Cache miss for key: ${key}`);
   res.sendResponse = res.json;
   res.json = (body) => {
     cache.set(key, body);
@@ -460,7 +461,7 @@ app.get('/get-video', cacheMiddleware('get-video'), async (req, res) => {
       if (
         doc.video_start_date_time &&
         doc.video_start_date_time.match(
-          /^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/
+          /^\d+\.\d+ \d{2}\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2}) [AP]M$/
         )
       ) {
         doc.video_start_date_time = parseCustomDate(doc.video_start_date_time);
@@ -468,7 +469,7 @@ app.get('/get-video', cacheMiddleware('get-video'), async (req, res) => {
       if (
         doc.video_end_date_time &&
         doc.video_end_date_time.match(
-          /^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/
+          /^\d+\.\d+ \d{2}\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2}) [AP]M$/
         )
       ) {
         doc.video_end_date_time = parseCustomDate(doc.video_end_date_time);
