@@ -574,6 +574,7 @@ app.get("/get-video", nodeCacheMiddleware('get-video'), async (req, res) => {
 app.get("/get-interval", cacheMiddleware('get-interval'), async (req, res) => {
   try {
     const intervalData = await IntervalInfo.find({});
+    console.log('Fetched interval data:', intervalData.length);
     const enrichedData = intervalData
       .map((doc) => {
         const data = doc._doc; // Access the actual document data
@@ -599,8 +600,10 @@ app.get("/get-interval", cacheMiddleware('get-interval'), async (req, res) => {
       return rest;
     });
 
+    console.log('Processed interval data:', result.length);
     res.json(result);
   } catch (err) {
+    console.error('Error fetching interval data:', err.message);
     res.status(500).json({ message: err.message });
   }
 });
