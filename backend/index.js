@@ -608,6 +608,26 @@ app.get("/get-interval", cacheMiddleware('get-interval'), async (req, res) => {
   }
 });
 
+// New endpoint to trigger three API calls simultaneously
+app.get("/trigger-three-calls", async (req, res) => {
+  try {
+    const [pcData, videoData, intervalData] = await Promise.all([
+      fetch(`http://localhost:${PORT}/get-pc`).then((res) => res.json()),
+      fetch(`http://localhost:${PORT}/get-video`).then((res) => res.json()),
+      fetch(`http://localhost:${PORT}/get-interval`).then((res) => res.json()),
+    ]);
+
+    res.json({
+      pcData,
+      videoData,
+      intervalData,
+    });
+  } catch (error) {
+    console.error("Error triggering three API calls:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something broke!");
