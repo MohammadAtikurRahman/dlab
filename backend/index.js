@@ -570,6 +570,12 @@ app.get('/get-interval', cacheMiddleware('get-interval'), async (req, res) => {
   }
 });
 
+// Endpoint to clear the cache for testing purposes
+app.get('/clear-cache', (req, res) => {
+  cache.flushAll();
+  res.send('Cache cleared');
+});
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
