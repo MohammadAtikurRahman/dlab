@@ -299,6 +299,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose").set("debug", true);
 const redis = require("redis");
 const NodeCache = require("node-cache");
+const memjs = require('memjs');
 
 // Create a Redis client
 const redisClient = redis.createClient({
@@ -320,6 +321,9 @@ redisClient.on("connect", () => {
 
 // Create a NodeCache instance
 const nodeCache = new NodeCache({ stdTTL: 3600 }); // Cache for 1 hour
+
+// Create a Memcached client
+const memcachedClient = memjs.Client.create(process.env.MEMCACHED_SERVER || '127.0.0.1:11211');
 
 mongoose
   .connect(process.env.MONGO_URI, {
@@ -359,7 +363,7 @@ app.get("/", (req, res) => {
 });
 
 // Redis caching middleware
-const cacheMiddleware = (key) => async (req, res, next) => {
+const redisCacheMiddleware = (key) => async (req, res, next) => {
   try {
     const cachedData = await redisClient.get(key);
     if (cachedData) {
@@ -395,6 +399,27 @@ const nodeCacheMiddleware = (key) => (req, res, next) => {
     res.sendResponse(body);
   };
   next();
+};
+
+// Memcached middleware for get-interval
+const memcachedMiddleware = (key) => async (req, res, next) => {
+  try {
+    const { value } = await memcachedClient.get(key);
+    if (value) {
+      console.log(`Memcached hit for key: ${key}`);
+      return res.json(JSON.parse(value.toString()));
+    }
+    console.log(`Memcached miss for key: ${key}`);
+    res.sendResponse = res.json;
+    res.json = (body) => {
+      memcachedClient.set(key, JSON.stringify(body), { expires: 3600 }); // Cache for 1 hour
+      res.sendResponse(body);
+    };
+    next();
+  } catch (error) {
+    console.error("Memcached error:", error);
+    next();
+  }
 };
 
 const parseCustomDate = (dateStr) => {
@@ -493,7 +518,7 @@ app.post("/video-info", async (req, res) => {
   }
 });
 
-app.get("/get-pc", cacheMiddleware('get-pc'), async (req, res) => {
+app.get("/get-pc", redisCacheMiddleware('get-pc'), async (req, res) => {
   try {
     const pcData = await AllTime.find({});
     const groupedData = {};
@@ -571,7 +596,7 @@ app.get("/get-video", nodeCacheMiddleware('get-video'), async (req, res) => {
   }
 });
 
-app.get("/get-interval", cacheMiddleware('get-interval'), async (req, res) => {
+app.get("/get-interval", memcachedMiddleware('get-interval'), async (req, res) => {
   try {
     const intervalData = await IntervalInfo.find({});
     console.log('Fetched interval data:', intervalData.length);
