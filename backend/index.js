@@ -140,7 +140,7 @@ app.post("/video-info", async (req, res) => {
 
 app.get("/get-pc", async (req, res) => {
   try {
-    const pcData = await AllTime.find({});
+    const pcData = await AllTime.find({}, null, { limit: 10 });
     const groupedData = {};
 
     pcData.forEach((doc) => {
@@ -201,6 +201,8 @@ app.get("/get-video", async (req, res) => {
       return doc;
     });
 
+    return res.json(processedData)
+
     // Create a temporary collection with processed data
     await mongoose.connection.db
       .collection("TempVideoInfo")
@@ -245,7 +247,7 @@ app.get("/get-video", async (req, res) => {
 
 app.get("/get-interval", async (req, res) => {
   try {
-    const intervalData = await IntervalInfo.find({});
+    const intervalData = await IntervalInfo.find({}).limit(10);
     const enrichedData = intervalData
       .map((doc) => {
         const data = doc._doc; // Access the actual document data
