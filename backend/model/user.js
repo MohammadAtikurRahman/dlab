@@ -2,7 +2,18 @@ const mongoose = require("mongoose");
 
 const allTimeSchema = new mongoose.Schema({
   dayid: Number,
- 
+  starttime: String,
+  totaltime: Number,
+  lasttime: String,
+  pcname: String,
+  eiin: Number,
+  schoolname: String,
+  labnum: Number,
+  pcnum: Number,
+});
+
+const interValSchema = new mongoose.Schema({
+  dayid: Number,
   starttime: String,
   totaltime: Number,
   lasttime: String,
@@ -15,7 +26,6 @@ const allTimeSchema = new mongoose.Schema({
 
 const allVideoSchema = new mongoose.Schema({
   dayid: Number,
- 
   pcname: String,
   eiin: Number,
   schoolname: String,
@@ -29,23 +39,8 @@ const allVideoSchema = new mongoose.Schema({
   duration: Number,
 });
 
-
-const interValSchema = new mongoose.Schema({
-  dayid: Number,
- 
-  starttime: String,
-  totaltime: Number,
-  lasttime: String,
-  pcname: String,
-  eiin: Number,
-  schoolname: String,
-  labnum: Number,
-  pcnum: Number,
-});
-
-
 module.exports = {
   AllTime: mongoose.model("AllTime", allTimeSchema),
+  IntervalInfo: mongoose.model("Intervalinfo", interValSchema),
   VideoInfo: mongoose.model("VideoInfo", allVideoSchema),
-  IntervalInfo: mongoose.model("Intervalinfo",interValSchema)
 };
