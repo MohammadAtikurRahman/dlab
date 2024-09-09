@@ -64,7 +64,7 @@ function Video() {
             </tr>
           </thead>
           <tbody>
-            {videoData.map((item, index) => (
+            {videoData && videoData.map((item, index) => (
               <tr key={item._id}>
                 <td>{index + 1}</td>
                 <td>{item.pcname}</td>
