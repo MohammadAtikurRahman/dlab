@@ -98,30 +98,91 @@ const convertToISO = (lasttime) => {
 };
 
 app.post("/pc-info", async (req, res) => {
-  // Expect req.body to be an array of objects
   if (!Array.isArray(req.body)) {
     return res.status(400).send("Expected an array of objects");
   }
-
   try {
-    const savedTimes = await AllTime.insertMany(req.body); // Bulk insert the array of objects
-    res.status(201).send(savedTimes); // Return the array of saved documents
+    let updates = req.body;
+    const bulkOps = updates.map((update) => ({
+      updateOne: {
+        filter: {
+          dayid: update.dayid,
+          starttime: update.starttime,
+          totaltime: update.totaltime,
+          lasttime: update.lasttime,
+          pcname: update.pcname,
+          eiin: update.eiin,
+          schoolname: update.schoolname,
+          labnum: update.labnum,
+          pcnum: update.pcnum,
+        },
+        update: {
+          $set: {
+            dayid: update.dayid,
+            starttime: update.starttime,
+            totaltime: update.totaltime,
+            lasttime: update.lasttime,
+            pcname: update.pcname,
+            eiin: update.eiin,
+            schoolname: update.schoolname,
+            labnum: update.labnum,
+            pcnum: update.pcnum,
+          }
+        },
+        upsert: true
+      }
+    }))
+
+    const savedTimes = await AllTime.bulkWrite(bulkOps);
+    return res.status(201).json(savedTimes);
   } catch (error) {
-    res.status(400).send(error.message); // If an error occurs, send the error message
+    return res.status(400).json({
+      error: error.message
+    })
   }
-});
+})
 
 app.post("/inter-info", async (req, res) => {
-  // Expect req.body to be an array of objects
   if (!Array.isArray(req.body)) {
     return res.status(400).send("Expected an array of objects");
   }
-
   try {
-    const savedTimes = await IntervalInfo.insertMany(req.body); // Bulk insert the array of objects
-    res.status(201).send(savedTimes); // Return the array of saved documents
+    let updates = req.body;
+    const bulkOps = updates.map((update) => ({
+      updateOne: {
+        filter: {
+          dayid: update.dayid,
+          starttime: update.starttime,
+          totaltime: update.totaltime,
+          lasttime: update.lasttime,
+          pcname: update.pcname,
+          eiin: update.eiin,
+          schoolname: update.schoolname,
+          labnum: update.labnum,
+          pcnum: update.pcnum,
+        },
+        update: {
+          $set: {
+            dayid: update.dayid,
+            starttime: update.starttime,
+            totaltime: update.totaltime,
+            lasttime: update.lasttime,
+            pcname: update.pcname,
+            eiin: update.eiin,
+            schoolname: update.schoolname,
+            labnum: update.labnum,
+            pcnum: update.pcnum,
+          }
+        },
+        upsert: true
+      }
+    }))
+    const savedTimes = await IntervalInfo.bulkWrite(bulkOps);
+    return res.status(201).json(savedTimes);
   } catch (error) {
-    res.status(400).send(error.message); // If an error occurs, send the error message
+    return res.status(400).json({
+      error: error.message
+    })
   }
 });
 
@@ -130,13 +191,47 @@ app.post("/video-info", async (req, res) => {
   if (!Array.isArray(req.body)) {
     return res.status(400).send("Expected an array of objects");
   }
-
   try {
-    const savedVideos = await VideoInfo.insertMany(req.body);
-    res.status(201).send(savedVideos);
+    const updates = req.body;
+    const bulkOps = updates.map((update) => ({
+      updateOne: {
+        filter: {
+          dayid: update.dayid,
+          pcname: update.pcname,
+          eiin: update.eiin,
+          schoolname: update.schoolname,
+          labnum: update.labnum,
+          pcnum: update.pcnum,
+          video_name: update.video_name,
+          video_start: update.video_start,
+          video_start_date_time: update.video_start_date_time,
+          video_end: update.video_end,
+          video_end_date_time: update.video_end_date_time,
+          duration: update.duration,
+        },
+        update: {
+          dayid: update.dayid,
+          pcname: update.pcname,
+          eiin: update.eiin,
+          schoolname: update.schoolname,
+          labnum: update.labnum,
+          pcnum: update.pcnum,
+          video_name: update.video_name,
+          video_start: update.video_start,
+          video_start_date_time: update.video_start_date_time,
+          video_end: update.video_end,
+          video_end_date_time: update.video_end_date_time,
+          duration: update.duration,
+        },
+        upsert: true
+      }
+    }))
+
+    const savedVideos = await VideoInfo.bulkWrite(bulkOps);
+    return res.status(201).send(savedVideos);
   } catch (error) {
     console.error("Insertion error in VideoInfo:", error);
-    res.status(500).send(error.message);
+    return res.status(500).send(error.message);
   }
 });
 
