@@ -8,15 +8,15 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
-app.use(express.json({limit: "50mb"}));
-app.use(express.urlencoded({extended: true}));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.use(express.static("uploads"));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 
-const {AllTime, VideoInfo, IntervalInfo} = require("./model/user.js");
+const { AllTime, VideoInfo, IntervalInfo } = require("./model/user.js");
 
 const exportRoutes = require('./routes/exportRoutes');
 const duplicateRemovalRoutes = require("./routes/removeDuplicates.js");
@@ -237,7 +237,11 @@ app.post("/video-info", async (req, res) => {
 
 app.get("/get-pc", async (req, res) => {
   try {
-    const pcData = await AllTime.find({});
+    const page = parseInt(req.params.page) || 1;
+    const limit = parseInt(req.params.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const pcData = await AllTime.find({}).skip(skip).limit(limit).exec();
     const groupedData = {};
 
     pcData.forEach((doc) => {
@@ -248,11 +252,8 @@ app.get("/get-pc", async (req, res) => {
       const day = isoDate.toISOString().split("T")[0];
       const key = `${data.eiin}-${data.labnum}-${data.pcnum}-${day}`;
 
-      if (
-        !groupedData[key] ||
-        isoDate > convertToISO(groupedData[key].lasttime)
-      ) {
-        groupedData[key] = {...data, isoLastTime: isoDate};
+      if (!groupedData[key] || isoDate > convertToISO(groupedData[key].lasttime)) {
+        groupedData[key] = { ...data, isoLastTime: isoDate };
       }
     });
 
@@ -263,117 +264,63 @@ app.get("/get-pc", async (req, res) => {
 
     // Remove the temporary isoLastTime field
     result = result.map((doc) => {
-      const {isoLastTime, ...rest} = doc;
+      const { isoLastTime, ...rest } = doc;
       return rest;
     });
 
     res.json(result);
   } catch (err) {
-    res.status(500).json({message: err.message});
+    res.status(500).json({ message: err.message });
   }
 });
 
 app.get("/get-video", async (req, res) => {
   try {
-    const videoData = await VideoInfo.find({});
+    const limit = parseInt(req.params.limit) || 20;
+    const page = parseInt(req.params.page) || 1;
+    const skip = (page - 1) * limit;
+
+    const videoData = await VideoInfo.find({}).skip(skip).limit(limit);
 
     // Preprocess date fields to ensure consistent formatting
     const processedData = videoData.map((doc) => {
-      if (
-        doc.video_start_date_time &&
-        doc.video_start_date_time.match(
-          /^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/
-        )
-      ) {
+      if (doc.video_start_date_time &&
+        doc.video_start_date_time.match(/^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/)) {
         doc.video_start_date_time = parseCustomDate(doc.video_start_date_time);
       }
-      if (
-        doc.video_end_date_time &&
-        doc.video_end_date_time.match(
-          /^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/
-        )
-      ) {
+      if (doc.video_end_date_time &&
+        doc.video_end_date_time.match(/^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/)) {
         doc.video_end_date_time = parseCustomDate(doc.video_end_date_time);
       }
       return doc;
     });
 
-    // Create a temporary collection with processed data
-    await mongoose.connection.db
-      .collection("TempVideoInfo")
-      .insertMany(processedData);
-
-    // Aggregate the data to remove duplicates and sort by video_end_date_time
-    const aggregatedData = await mongoose.connection.db
-      .collection("TempVideoInfo")
-      .aggregate([
-        {
-          $group: {
-            _id: {
-              schoolname: "$schoolname",
-              video_name: "$video_name",
-              video_start: "$video_start",
-              video_end: "$video_end",
-              video_start_date_time: "$video_start_date_time",
-              video_end_date_time: "$video_end_date_time",
-              labnum: "$labnum",
-              pcnum: "$pcnum",
-            },
-            doc: {$first: "$$ROOT"},
-          },
-        },
-        {
-          $replaceRoot: {newRoot: "$doc"},
-        },
-        {
-          $sort: {video_end_date_time: -1},
-        },
-      ])
-      .toArray();
-
-    // Clean up temporary collection
-    await mongoose.connection.db.collection("TempVideoInfo").drop();
-
-    res.json(aggregatedData);
+    return res.json({ aggregatedData: processedData });
   } catch (err) {
-    res.status(500).json({message: err.message});
+    return res.status(500).json({ message: err.message });
   }
 });
 
 app.get("/get-interval", async (req, res) => {
   try {
-    const intervalData = await IntervalInfo.find({});
+    const limit = parseInt(req.params.limit) || 20;
+    const page = parseInt(req.params.page) || 1;
+    const skip = (page - 1) * limit;
+
+    const intervalData = await IntervalInfo.find({}).skip(skip).limit(limit);
     const enrichedData = intervalData
       .map((doc) => {
         const data = doc._doc; // Access the actual document data
         const isoDate = convertToISO(data.lasttime);
-        return {...data, isoLastTime: isoDate};
+        return { ...data, isoLastTime: isoDate };
       })
       .filter((doc) => doc.isoLastTime !== null);
 
     // Sort the results by isoLastTime in descending order
     enrichedData.sort((a, b) => b.isoLastTime - a.isoLastTime);
-
-    // Filter out entries with duplicate totaltime values
-    const uniqueTotaltimeData = [];
-    const seenTotaltime = new Set();
-
-    enrichedData.forEach((doc) => {
-      if (!seenTotaltime.has(doc.totaltime)) {
-        uniqueTotaltimeData.push(doc);
-        seenTotaltime.add(doc.totaltime);
-      }
-    });
-
-    // Remove the temporary isoLastTime field
-    const result = uniqueTotaltimeData.map((doc) => {
-      const {isoLastTime, ...rest} = doc;
-      return rest;
-    });
-
-    res.json(result);
+    return res.json({ result: enrichedData });
   } catch (err) {
-    res.status(500).json({message: err.message});
+    return res.status(500).json({ message: err.message });
   }
 });
 
