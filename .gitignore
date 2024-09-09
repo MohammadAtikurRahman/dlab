@@ -6,3 +6,4 @@ DB.zip
 dlab-database1
 *.zip
 *.csv
+package-lock.json
