@@ -40,16 +40,15 @@ class DuplicateRemovalController {
             processedKeys.add(key);
           }
         }
-
-        hasMore = ((await cursor.next()) != null);
+        hasMore = (await cursor.count() > 0);
       }
 
-      res.status(200).send({
-        message: "Duplicates removed" + totalRemoved,
-        removedCount: totalRemoved,
+      return res.status(200).json({
+        removedRecords: totalRemoved,
+        uniqueRecords: processedKeys.length
       });
     } catch (error) {
-      res.status(500).send({error: error.message});
+      return res.status(500).json({error: error.message});
     }
   }
 }
