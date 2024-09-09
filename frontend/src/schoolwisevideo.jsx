@@ -219,7 +219,7 @@ function SchoolwiseVideo() {
 
             <h3 className='shadow-lg p-3 mb-5 bg-white rounded text-center'>All Schools</h3>
             <ul className="list-group">
-                {Array.from(new Set(videoData.map(item => item.schoolname))).reverse().map((school, index) => (
+                {Array.isArray(videoData) && Array.from(new Set(videoData.map(item => item.schoolname))).reverse().map((school, index) => (
                     <li
                         key={index}
                         className={`list-group-item list-group-item-action list-group-item-primary d-flex justify-content-between align-items-center 
