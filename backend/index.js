@@ -8,18 +8,20 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({limit: "50mb"}));
+app.use(express.urlencoded({extended: true}));
 app.use(cors());
 
 app.use(express.static("uploads"));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({extended: true}));
 
-const { AllTime, VideoInfo, IntervalInfo } = require("./model/user.js");
+const {AllTime, VideoInfo, IntervalInfo} = require("./model/user.js");
 
-const exportRoutes = require('./routes/exportRoutes'); // Adjust the path as needed
-app.use(exportRoutes)
+const exportRoutes = require('./routes/exportRoutes');
+const duplicateRemovalRoutes = require("./routes/removeDuplicates.js");
+app.use(exportRoutes);
+app.use(duplicateRemovalRoutes);
 
 app.use((req, res, next) => {
   console.log(`${req.method} request for '${req.url}' from ${req.ip}`);
@@ -155,7 +157,7 @@ app.get("/get-pc", async (req, res) => {
         !groupedData[key] ||
         isoDate > convertToISO(groupedData[key].lasttime)
       ) {
-        groupedData[key] = { ...data, isoLastTime: isoDate };
+        groupedData[key] = {...data, isoLastTime: isoDate};
       }
     });
 
@@ -166,13 +168,13 @@ app.get("/get-pc", async (req, res) => {
 
     // Remove the temporary isoLastTime field
     result = result.map((doc) => {
-      const { isoLastTime, ...rest } = doc;
+      const {isoLastTime, ...rest} = doc;
       return rest;
     });
 
     res.json(result);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({message: err.message});
   }
 });
 
@@ -222,14 +224,14 @@ app.get("/get-video", async (req, res) => {
               labnum: "$labnum",
               pcnum: "$pcnum",
             },
-            doc: { $first: "$$ROOT" },
+            doc: {$first: "$$ROOT"},
           },
         },
         {
-          $replaceRoot: { newRoot: "$doc" },
+          $replaceRoot: {newRoot: "$doc"},
         },
         {
-          $sort: { video_end_date_time: -1 },
+          $sort: {video_end_date_time: -1},
         },
       ])
       .toArray();
@@ -239,7 +241,7 @@ app.get("/get-video", async (req, res) => {
 
     res.json(aggregatedData);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({message: err.message});
   }
 });
 
@@ -250,7 +252,7 @@ app.get("/get-interval", async (req, res) => {
       .map((doc) => {
         const data = doc._doc; // Access the actual document data
         const isoDate = convertToISO(data.lasttime);
-        return { ...data, isoLastTime: isoDate };
+        return {...data, isoLastTime: isoDate};
       })
       .filter((doc) => doc.isoLastTime !== null);
 
@@ -270,13 +272,13 @@ app.get("/get-interval", async (req, res) => {
 
     // Remove the temporary isoLastTime field
     const result = uniqueTotaltimeData.map((doc) => {
-      const { isoLastTime, ...rest } = doc;
+      const {isoLastTime, ...rest} = doc;
       return rest;
     });
 
     res.json(result);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({message: err.message});
   }
 });
 
