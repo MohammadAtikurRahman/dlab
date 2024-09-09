@@ -16,30 +16,31 @@ class DuplicateRemovalController {
     try {
       const {collectionName} = req.params;
       const collection = mongoose.connection.collection(collectionName);
-      const batchSize = 1000;
+      const batchSize = 100000;
       let hasMore = true;
       let totalRemoved = 0;
 
       while (hasMore) {
         const cursor = collection.find().batchSize(batchSize);
         const processedKeys = new Set();
-        const duplicateIds = [];
+        let duplicateIds = [];
 
         while (await cursor.hasNext()) {
           const doc = await cursor.next();
           const key = JSON.stringify(this.generateKey(doc));
           if (processedKeys.has(key)) {
             duplicateIds.push(doc._id);
+            if (duplicateIds.length > batchSize) {
+              const result = await collection.deleteMany({_id: {$in: duplicateIds}})
+              duplicateIds = [];
+              totalRemoved += result.deletedCount;
+              console.log("totalRemoved = ", totalRemoved)
+            }
           } else {
             processedKeys.add(key);
           }
         }
-        if (duplicateIds.length > batchSize) {
-          const result = await collection.deleteMany({_id: {$in: duplicateIds}})
-          duplicateIds = [];
-          totalRemoved += result.deletedCount;
-          console.log("totalRemoved = ", totalRemoved)
-        }
+
         hasMore = ((await cursor.next()) != null);
       }
 
