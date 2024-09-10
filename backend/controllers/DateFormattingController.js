@@ -4,6 +4,9 @@ const {AllTime, IntervalInfo} = require("../model/user.js");
 
 class DateFormattingController {
   convertToISO(timeString) {
+    if (moment(timeString, moment.ISO_8601, true).isValid()) {
+      return timeString;
+    }
     const parsedDate = moment(timeString, "DD/MM/YYYY, hh:mm:ss a");
     return parsedDate.toISOString();
   }

@@ -46,62 +46,10 @@ app.get("/", (req, res) => {
   res.send("Welcome to the Home Page!");
 });
 
-const parseCustomDate = (dateStr) => {
-  const customDatePattern =
-    /^(\d+\.\d+) (\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2}) ([AP]M)$/;
-  const isoDatePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
-
-  if (isoDatePattern.test(dateStr)) {
-    return dateStr; // Return the date as is if it is already in ISO format
-  }
-
-  const match = dateStr.match(customDatePattern);
-  if (match) {
-    const [_, fraction, day, month, year, hour, minute, second, period] = match;
-    let hours = parseInt(hour, 10);
-    const minutes = parseInt(minute, 10);
-    const seconds = parseInt(second, 10);
-
-    if (period === "PM" && hours < 12) {
-      hours += 12;
-    } else if (period === "AM" && hours === 12) {
-      hours = 0;
-    }
-
-    const date = new Date(
-      Date.UTC(year, month - 1, day, hours, minutes, seconds)
-    );
-    return date.toISOString();
-  }
-
-  return dateStr; // Return the original string if it doesn't match the pattern
-};
-
-const convertToISO = (lasttime) => {
-  if (!lasttime) return null;
-
-  const parts = lasttime.split(/[\s,]+/);
-  if (parts.length < 3) return null;
-
-  const [datePart, timePart, period] = parts;
-  const [day, month, year] = datePart.split("/");
-  if (!day || !month || !year) return null;
-
-  let [hours, minutes, seconds] = timePart.split(":");
-  if (!hours || !minutes || !seconds) return null;
-
-  if (period.toLowerCase() === "pm" && hours !== "12") {
-    hours = String(parseInt(hours, 10) + 12);
-  } else if (period.toLowerCase() === "am" && hours === "12") {
-    hours = "00";
-  }
-
-  return new Date(
-    `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000Z`
-  );
-};
-
 function convertToISO(timeString) {
+  if (moment(timeString, moment.ISO_8601, true).isValid()) {
+    return timeString;
+  }
   const parsedDate = moment(timeString, "DD/MM/YYYY, hh:mm:ss a");
   return parsedDate.toISOString();
 }
@@ -250,34 +198,9 @@ app.get("/get-pc", async (req, res) => {
     const limit = parseInt(req.params.limit) || 200;
     const skip = (page - 1) * limit;
 
-    const pcData = await AllTime.find({}).skip(skip).limit(limit).exec();
-    const groupedData = {};
+    const pcData = await AllTime.find({}).sort({lasttime: -1}).skip(skip).limit(limit).exec();
 
-    pcData.forEach((doc) => {
-      const data = doc._doc; // Access the actual document data
-      const isoDate = convertToISO(data.lasttime);
-      if (!isoDate) return; // Skip if conversion fails
-
-      const day = isoDate.toISOString().split("T")[0];
-      const key = `${data.eiin}-${data.labnum}-${data.pcnum}-${day}`;
-
-      if (!groupedData[key] || isoDate > convertToISO(groupedData[key].lasttime)) {
-        groupedData[key] = { ...data, isoLastTime: isoDate };
-      }
-    });
-
-    let result = Object.values(groupedData);
-
-    // Sort the results by isoLastTime in descending order
-    result.sort((a, b) => b.isoLastTime - a.isoLastTime);
-
-    // Remove the temporary isoLastTime field
-    result = result.map((doc) => {
-      const { isoLastTime, ...rest } = doc;
-      return rest;
-    });
-
-    res.json(result);
+    return res.json({result: pcData});
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -289,22 +212,9 @@ app.get("/get-video", async (req, res) => {
     const page = parseInt(req.params.page) || 1;
     const skip = (page - 1) * limit;
 
-    const videoData = await VideoInfo.find({}).skip(skip).limit(limit);
+    const videoData = await VideoInfo.find({}).sort({video_end_date_time: -1}).skip(skip).limit(limit);
 
-    // Preprocess date fields to ensure consistent formatting
-    const processedData = videoData.map((doc) => {
-      if (doc.video_start_date_time &&
-        doc.video_start_date_time.match(/^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/)) {
-        doc.video_start_date_time = parseCustomDate(doc.video_start_date_time);
-      }
-      if (doc.video_end_date_time &&
-        doc.video_end_date_time.match(/^\d+\.\d+ \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2} [AP]M$/)) {
-        doc.video_end_date_time = parseCustomDate(doc.video_end_date_time);
-      }
-      return doc;
-    });
-
-    return res.json({ aggregatedData: processedData });
+    return res.json({ aggregatedData: videoData });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
@@ -316,18 +226,9 @@ app.get("/get-interval", async (req, res) => {
     const page = parseInt(req.params.page) || 1;
     const skip = (page - 1) * limit;
 
-    const intervalData = await IntervalInfo.find({}).skip(skip).limit(limit);
-    const enrichedData = intervalData
-      .map((doc) => {
-        const data = doc._doc; // Access the actual document data
-        const isoDate = convertToISO(data.lasttime);
-        return { ...data, isoLastTime: isoDate };
-      })
-      .filter((doc) => doc.isoLastTime !== null);
+    const intervalData = await IntervalInfo.find({}).sort({lasttime: -1}).skip(skip).limit(limit);
 
-    // Sort the results by isoLastTime in descending order
-    enrichedData.sort((a, b) => b.isoLastTime - a.isoLastTime);
-    return res.json({ result: enrichedData });
+    return res.json({ result: intervalData });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
