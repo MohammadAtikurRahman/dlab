@@ -40,13 +40,13 @@ class CommonController {
         }
       ])
 
-      const {videoUsage} = result;
+      const {videoUsage} = result[0];
 
       return res.status(200).json({
         distinctSchoolCount,
         distinctPcCount,
         distinctLabCount,
-        totalTimeSum,
+        totalPcUsedTime,
         videoUsage,
       });
     } catch (error) {

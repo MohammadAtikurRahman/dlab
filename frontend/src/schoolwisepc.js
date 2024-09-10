@@ -16,7 +16,7 @@ function SchoolwisePC() {
         const response = await fetch(`${baseUrl}/get-pc`);
         if (response.ok) {
           const data = await response.json();
-          setSchoolData(data);
+          setSchoolData(data.result);
         } else {
           throw new Error("Network response was not ok.");
         }
