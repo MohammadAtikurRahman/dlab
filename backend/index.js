@@ -99,6 +99,11 @@ const convertToISO = (lasttime) => {
   );
 };
 
+function convertToISO(timeString) {
+  const parsedDate = moment(timeString, "DD/MM/YYYY, hh:mm:ss a");
+  return parsedDate.toISOString();
+}
+
 app.post("/pc-info", async (req, res) => {
   if (!Array.isArray(req.body)) {
     return res.status(400).send("Expected an array of objects");
@@ -109,9 +114,9 @@ app.post("/pc-info", async (req, res) => {
       updateOne: {
         filter: {
           dayid: update.dayid,
-          starttime: update.starttime,
+          starttime: convertToISO(update.starttime),
+          lasttime: convertToISO(update.lasttime),
           totaltime: update.totaltime,
-          lasttime: update.lasttime,
           pcname: update.pcname,
           eiin: update.eiin,
           schoolname: update.schoolname,
@@ -121,9 +126,9 @@ app.post("/pc-info", async (req, res) => {
         update: {
           $set: {
             dayid: update.dayid,
-            starttime: update.starttime,
+            starttime: convertToISO(update.starttime),
+            lasttime: convertToISO(update.lasttime),
             totaltime: update.totaltime,
-            lasttime: update.lasttime,
             pcname: update.pcname,
             eiin: update.eiin,
             schoolname: update.schoolname,
@@ -154,9 +159,9 @@ app.post("/inter-info", async (req, res) => {
       updateOne: {
         filter: {
           dayid: update.dayid,
-          starttime: update.starttime,
+          starttime: convertToISO(update.starttime),
+          lasttime: convertToISO(update.lasttime),
           totaltime: update.totaltime,
-          lasttime: update.lasttime,
           pcname: update.pcname,
           eiin: update.eiin,
           schoolname: update.schoolname,
@@ -166,9 +171,9 @@ app.post("/inter-info", async (req, res) => {
         update: {
           $set: {
             dayid: update.dayid,
-            starttime: update.starttime,
+            starttime: convertToISO(update.starttime),
+            lasttime: convertToISO(update.lasttime),
             totaltime: update.totaltime,
-            lasttime: update.lasttime,
             pcname: update.pcname,
             eiin: update.eiin,
             schoolname: update.schoolname,

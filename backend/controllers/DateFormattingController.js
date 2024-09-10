@@ -9,8 +9,8 @@ class DateFormattingController {
   }
   async formatDate(req, res) {
     try {
-      const alltimes = AllTime.find({}, {starttime: 1, lasttime: 1}).exec();
-      const intervals = IntervalInfo.find({}, {starttime: 1, lasttime: 1}).exec();
+      const alltimes = await AllTime.find({}, {starttime: 1, lasttime: 1}).exec();
+      const intervals = await IntervalInfo.find({}, {starttime: 1, lasttime: 1}).exec();
 
       let bulkOps = alltimes.map((time) => ({
         updateOne: {
