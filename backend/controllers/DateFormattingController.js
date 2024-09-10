@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const moment = require("moment")
-const {AllTime, IntervalInfo} = require("./model/user.js");
+const {AllTime, IntervalInfo} = require("../model/user.js");
 
 class DateFormattingController {
   convertToISO(timeString) {
