@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./histogram.css";
-import axios from "axios";
 import ChartPc from "./chartpc";
 import ChartVideo from "./chartvideo";
-import moment from 'moment';
 
 const Histogram = () => {
   const [data, setData] = useState([]);
@@ -21,12 +19,13 @@ const Histogram = () => {
       try {
         let response = await fetch(`${baseUrl}/histogram`);
         response = await response.json();
-        console.log(response.videoUsage);
+
         setActivePCs(response.distinctPcCount);
         setActiveLabs(response.distinctLabCount);
         setTotalPCUsages(formatTime(response.totalPcUsedTime));
         setTotalDuration(formatTime(response.videoUsage));
         setActiveSchools(response.distinctSchoolCount);
+
       } catch (error) {
         console.error("Error fetching data:", error);
       }
