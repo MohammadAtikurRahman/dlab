@@ -10,15 +10,15 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
-app.use(express.json({limit: "50mb"}));
-app.use(express.urlencoded({extended: true}));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.use(express.static("uploads"));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 
-const {AllTime, VideoInfo, IntervalInfo} = require("./model/user.js");
+const { AllTime, VideoInfo, IntervalInfo } = require("./model/user.js");
 
 const exportRoutes = require('./routes/exportRoutes');
 const duplicateRemovalRoutes = require("./routes/removeDuplicates");
@@ -202,11 +202,29 @@ app.get("/get-pc", async (req, res) => {
     const limit = parseInt(req.params.limit) || 200;
     const skip = (page - 1) * limit;
 
-    const pcData = await AllTime.find({}).sort({lasttime: -1}).skip(skip).limit(limit).exec();
+    const pcData = await AllTime.find({}).sort({ lasttime: -1 }).skip(skip).limit(limit).exec();
 
-    return res.json({result: pcData});
+    return res.json({ result: pcData });
   } catch (err) {
-    res.status(500).json({message: err.message});
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get("/chart-pc", async (req, res) => {
+  try {
+    let sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo = sevenDaysAgo.toISOString();
+
+    const pcData = await AllTime.find({
+      lasttime: {
+        $gte: sevenDaysAgo,
+      }
+    });
+
+    return res.json({ result: pcData });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
   }
 });
 
@@ -216,11 +234,28 @@ app.get("/get-video", async (req, res) => {
     const page = parseInt(req.params.page) || 1;
     const skip = (page - 1) * limit;
 
-    const videoData = await VideoInfo.find({}).sort({video_end_date_time: -1}).skip(skip).limit(limit);
+    const videoData = await VideoInfo.find({}).sort({ video_end_date_time: -1 }).skip(skip).limit(limit);
 
-    return res.json({aggregatedData: videoData});
+    return res.json({ aggregatedData: videoData });
   } catch (err) {
-    return res.status(500).json({message: err.message});
+    return res.status(500).json({ message: err.message });
+  }
+});
+
+app.get("/chart-video", async (req, res) => {
+  try {
+    let sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo = sevenDaysAgo.toISOString();
+
+    const videoData = await VideoInfo.find({
+      video_end_date_time: {
+        $gte: sevenDaysAgo,
+      }
+    });
+    return res.json({ aggregatedData: videoData });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
   }
 });
 
@@ -230,11 +265,11 @@ app.get("/get-interval", async (req, res) => {
     const page = parseInt(req.params.page) || 1;
     const skip = (page - 1) * limit;
 
-    const intervalData = await IntervalInfo.find({}).sort({lasttime: -1}).skip(skip).limit(limit);
+    const intervalData = await IntervalInfo.find({}).sort({ lasttime: -1 }).skip(skip).limit(limit);
 
-    return res.json({result: intervalData});
+    return res.json({ result: intervalData });
   } catch (err) {
-    return res.status(500).json({message: err.message});
+    return res.status(500).json({ message: err.message });
   }
 });
 
@@ -247,4 +282,3 @@ const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-

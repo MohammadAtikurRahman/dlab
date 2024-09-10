@@ -83,9 +83,6 @@ app.post("/video-info", async (req, res) => {
   }
 });
 
-
-
-
 app.get("/get-pc", async (req, res) => {
   try {
     const pcData = await AllTime.find({});
@@ -95,7 +92,23 @@ app.get("/get-pc", async (req, res) => {
   }
 });
 
-// Define the 'get-video' endpoint
+app.get("/chart-pc", async (req, res) => {
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const pcData = await AllTime.find({
+      video_end_date_time: {
+        $gte: sevenDaysAgo,  // Greater than or equal to 7 days ago
+        $lt: new Date()      // Less than today
+      }
+    });
+    return res.json(pcData);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 app.get("/get-video", async (req, res) => {
   try {
     const videoData = await VideoInfo.find({});
@@ -104,6 +117,24 @@ app.get("/get-video", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+app.get("/chart-video", async (req, res) => {
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const videoData = await VideoInfo.find({
+      video_end_date_time: {
+        $gte: sevenDaysAgo,
+        $lt: new Date()      // Less than today
+      }
+    });
+    return res.json(videoData);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 app.get("/get-interval", async (req, res) => {
   try {
     const videoData = await IntervalInfo.find({});
@@ -112,10 +143,6 @@ app.get("/get-interval", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
-
-
-
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something broke!");
