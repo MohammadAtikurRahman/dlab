@@ -4,7 +4,8 @@
   "description": "updated",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --max-old-space-size=4096 index.js"
+    "start": "nodemon --max-old-space-size=4096 index.js",
+    "dev": "node index.js"
   },
   "keywords": [],
   "author": "",

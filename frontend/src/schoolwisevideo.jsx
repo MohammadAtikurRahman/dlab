@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import Fuse from 'fuse.js';
 import './index.css';
 
@@ -16,7 +16,7 @@ function SchoolwiseVideo() {
                 const response = await fetch(`${baseUrl}/get-video`);
                 if (response.ok) {
                     const data = await response.json();
-                    setVideoData(data);
+                    setVideoData(data.aggregatedData);
                 } else {
                     throw new Error('Network response was not ok.');
                 }
@@ -105,7 +105,7 @@ function SchoolwiseVideo() {
             .replace(/[/\\?%*:|"<>]/g, '');
         const filename = `${sanitizedSchoolName}-${sanitizedEIIN}-Videos.csv`;
 
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const blob = new Blob([csvContent], {type: "text/csv;charset=utf-8;"});
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.setAttribute("href", url);
@@ -219,11 +219,11 @@ function SchoolwiseVideo() {
 
             <h3 className='shadow-lg p-3 mb-5 bg-white rounded text-center'>All Schools</h3>
             <ul className="list-group">
-                {Array.isArray(videoData) && Array.from(new Set(videoData.map(item => item.schoolname))).reverse().map((school, index) => (
+                {Array.from(new Set(videoData.map(item => item.schoolname))).reverse().map((school, index) => (
                     <li
                         key={index}
                         className={`list-group-item list-group-item-action list-group-item-primary d-flex justify-content-between align-items-center 
-                        ${selectedSchool && selectedSchool[0].schoolname === school ? "" : ""}`   }
+                        ${selectedSchool && selectedSchool[0].schoolname === school ? "" : ""}`}
                         onClick={() => handleSchoolClick(school)}
                     >
                         {school} (EIIN: {videoData.find(item => item.schoolname === school).eiin})

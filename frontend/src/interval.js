@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect} from "react";
 
 import AllIntervalDownload from "./allintervaldownload";
 
@@ -30,7 +30,7 @@ function Interval() {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      setIntervalData(data);
+      setIntervalData(data.result);
     } catch (error) {
       setError("Failed to fetch data: " + error.message);
     } finally {
@@ -54,15 +54,15 @@ function Interval() {
             {isLoading
               ? "Loading..."
               : isTableVisible
-              ? "Hide Interval Data"
-              : "Show Interval Data"}
+                ? "Hide Interval Data"
+                : "Show Interval Data"}
           </button>
         </div>
         <div className="col-6">
-          <AllIntervalDownload/>
+          <AllIntervalDownload />
         </div>
       </div>
-      {error && <div style={{ color: "red" }}>{error}</div>}
+      {error && <div style={{color: "red"}}>{error}</div>}
       {isTableVisible && intervalData.length > 0 && (
         <table className="table table-striped">
           <thead>
