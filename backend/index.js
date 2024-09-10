@@ -20,8 +20,10 @@ const { AllTime, VideoInfo, IntervalInfo } = require("./model/user.js");
 
 const exportRoutes = require('./routes/exportRoutes');
 const duplicateRemovalRoutes = require("./routes/removeDuplicates.js");
+const dateFormattingRoutes = require("./routes/dateFormattingRoutes")
 app.use(exportRoutes);
 app.use(duplicateRemovalRoutes);
+app.use(dateFormattingRoutes)
 
 app.use((req, res, next) => {
   console.log(`${req.method} request for '${req.url}' from ${req.ip}`);
