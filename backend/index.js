@@ -238,7 +238,7 @@ app.post("/video-info", async (req, res) => {
 app.get("/get-pc", async (req, res) => {
   try {
     const page = parseInt(req.params.page) || 1;
-    const limit = parseInt(req.params.limit) || 20;
+    const limit = parseInt(req.params.limit) || 200;
     const skip = (page - 1) * limit;
 
     const pcData = await AllTime.find({}).skip(skip).limit(limit).exec();
@@ -276,7 +276,7 @@ app.get("/get-pc", async (req, res) => {
 
 app.get("/get-video", async (req, res) => {
   try {
-    const limit = parseInt(req.params.limit) || 20;
+    const limit = parseInt(req.params.limit) || 200;
     const page = parseInt(req.params.page) || 1;
     const skip = (page - 1) * limit;
 
@@ -303,7 +303,7 @@ app.get("/get-video", async (req, res) => {
 
 app.get("/get-interval", async (req, res) => {
   try {
-    const limit = parseInt(req.params.limit) || 20;
+    const limit = parseInt(req.params.limit) || 200;
     const page = parseInt(req.params.page) || 1;
     const skip = (page - 1) * limit;
 
