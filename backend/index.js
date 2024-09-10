@@ -10,22 +10,26 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({limit: "50mb"}));
+app.use(express.urlencoded({extended: true}));
 app.use(cors());
 
 app.use(express.static("uploads"));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({extended: true}));
 
-const { AllTime, VideoInfo, IntervalInfo } = require("./model/user.js");
+const {AllTime, VideoInfo, IntervalInfo} = require("./model/user.js");
 
 const exportRoutes = require('./routes/exportRoutes');
-const duplicateRemovalRoutes = require("./routes/removeDuplicates.js");
+const duplicateRemovalRoutes = require("./routes/removeDuplicates");
 const dateFormattingRoutes = require("./routes/dateFormattingRoutes")
+const generalRoutes = require("./routes/generalRoutes")
+
 app.use(exportRoutes);
+app.use(generalRoutes);
 app.use(duplicateRemovalRoutes);
 app.use(dateFormattingRoutes)
+app.use(generalRoutes);
 
 app.use((req, res, next) => {
   console.log(`${req.method} request for '${req.url}' from ${req.ip}`);
@@ -202,7 +206,7 @@ app.get("/get-pc", async (req, res) => {
 
     return res.json({result: pcData});
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({message: err.message});
   }
 });
 
@@ -214,9 +218,9 @@ app.get("/get-video", async (req, res) => {
 
     const videoData = await VideoInfo.find({}).sort({video_end_date_time: -1}).skip(skip).limit(limit);
 
-    return res.json({ aggregatedData: videoData });
+    return res.json({aggregatedData: videoData});
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return res.status(500).json({message: err.message});
   }
 });
 
@@ -228,9 +232,9 @@ app.get("/get-interval", async (req, res) => {
 
     const intervalData = await IntervalInfo.find({}).sort({lasttime: -1}).skip(skip).limit(limit);
 
-    return res.json({ result: intervalData });
+    return res.json({result: intervalData});
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return res.status(500).json({message: err.message});
   }
 });
 
