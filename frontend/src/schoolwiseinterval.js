@@ -1,213 +1,119 @@
-import React, {useState, useEffect} from 'react';
-import Fuse from 'fuse.js';
-import './index.css';  // Make sure your CSS handles the layout correctly.
+import React, { useState, useEffect } from "react";
+import "./index.css";
 
 function SchoolwiseInterval() {
-    const [intervalData, setIntervalData] = useState([]);
-    const [selectedIntervals, setSelectedIntervals] = useState(null);
-    const [query, setQuery] = useState('');
-    const [searchResults, setSearchResults] = useState([]);
-    const [selectedSearchIntervals, setSelectedSearchIntervals] = useState(null);
-    const baseUrl = process.env.REACT_APP_URL;
+  const [schools, setSchools] = useState([]);
+  const [searchedSchools, setSearchedSchools] = useState([]);
+  const [query, setQuery] = useState("");
+  const [selectedSchool, setSelectedSchool] = useState(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch(`${baseUrl}/get-interval`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setIntervalData(data.result);
-                } else {
-                    throw new Error('Network response was not ok.');
-                }
-            } catch (error) {
-                console.error('Error fetching data: ', error);
-            }
-        };
+  const baseUrl = process.env.REACT_APP_URL;
 
-        fetchData();
-    }, []);
-
-    const fuse = new Fuse(intervalData, {
-        keys: ['schoolname', 'eiin'],
-        includeScore: true
-    });
-
-    const handleSearch = (pattern) => {
-        setQuery(pattern);
-        if (pattern.trim() === '') {
-            setSearchResults([]);
-            setSelectedSearchIntervals(null);
-        } else {
-            const results = fuse.search(pattern);
-            const matches = results.map(result => result.item);
-            const uniqueIntervals = Array.from(new Set(matches.map(item => item.schoolname)))
-                .map(schoolname => matches.find(item => item.schoolname === schoolname));
-            setSearchResults(uniqueIntervals);
-        }
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        let response = await fetch(`${baseUrl}/schools`);
+        response = await response.json();
+        setSchools(response.schools);
+      } catch (error) {
+        console.error("Network response was not ok.", error);
+      }
     };
+    fetchData();
+  }, [baseUrl]);
 
-    const handleIntervalClick = (schoolName, fromSearch = false) => {
-        if (fromSearch) {
-            if (selectedSearchIntervals && selectedSearchIntervals[0].schoolname === schoolName) {
-                setSelectedSearchIntervals(null);
-            } else {
-                const intervalInfo = intervalData.filter(item => item.schoolname === schoolName);
-                setSelectedSearchIntervals(intervalInfo);
-            }
-        } else {
-            if (selectedIntervals && selectedIntervals[0].schoolname === schoolName) {
-                setSelectedIntervals(null);
-            } else {
-                const intervalInfo = intervalData.filter(item => item.schoolname === schoolName);
-                setSelectedIntervals(intervalInfo);
-            }
-        }
-    };
-
-    const downloadCSV = (intervalInfo) => {
-        if (!intervalInfo.length) return; // Early return if no interval info
-
-        const headers = ["School Name", "PC Name", "Start Time", "Last Time", "Total Time (s)", "Lab", "PC", "EIIN"];
-        const csvContent = [
-            headers.join(","),
-            ...intervalInfo.map(item => [
-                `"${item.schoolname ? item.schoolname.replace(/"/g, '""') : ''}"`,
-                `"${item.pcname ? item.pcname.replace(/"/g, '""') : ''}"`,
-                `"${item.starttime ? item.starttime : ''}"`,
-                `"${item.lasttime ? item.lasttime : ''}"`,
-                `"${item.totaltime ? item.totaltime : ''}"`,
-                `"${item.labnum ? item.labnum : ''}"`,
-                `"${item.pcnum ? item.pcnum : ''}"`,
-                `"${item.eiin ? item.eiin : ''}"`
-            ].join(","))
-        ].join("\n");
-
-        const sanitizedSchoolName = intervalInfo[0].schoolname ? intervalInfo[0].schoolname.replace(/[/\\?%*:|"<>]/g, '') : 'unknown';
-        const sanitizedEIIN = intervalInfo[0].eiin ? intervalInfo[0].eiin.toString().replace(/[/\\?%*:|"<>]/g, '') : 'unknown';
-        const filename = `${sanitizedSchoolName}-${sanitizedEIIN}-Intervals.csv`;
-
-        const blob = new Blob([csvContent], {type: "text/csv;charset=utf-8;"});
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", filename);
-        link.style.visibility = "hidden";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-    return (
-        <div className="container mt-5">
-            <input
-                type="text"
-                className="form-control mb-3"
-                placeholder="Search by school name or EIIN..."
-                value={query}
-                onChange={(e) => handleSearch(e.target.value)}
-            />
-
-            <h3 className='shadow-lg p-3 mb-5 bg-white rounded text-center'>Search Results</h3>
-            <ul className="list-group mb-4">
-                {searchResults.length > 0 ? (
-                    searchResults.map((school, index) => (
-                        <li key={index} className="list-group-item list-group-item-action list-group-item-success" onClick={() => handleIntervalClick(school.schoolname, true)}>
-                            {school.schoolname} (EIIN: {school.eiin})
-                        </li>
-                    ))
-                ) : (
-                    <li className="list-group-item">No search results</li>
-                )}
-            </ul>
-
-            {selectedSearchIntervals && selectedSearchIntervals.length > 0 && (
-                <div className="mt-4">
-                    <h3 className='shadow-lg p-3 mb-5 bg-white rounded text-center'>Selected Search Interval Details</h3>
-                    <table className="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>School Name</th>
-                                <th>PC Name</th>
-                                <th>Start Time</th>
-                                <th>Last Time</th>
-                                <th>Total Time (s)</th>
-                                <th>Lab Number</th>
-                                <th>PC Number</th>
-                                <th>EIIN</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {selectedSearchIntervals.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{index + 1}</td>
-                                    <td>{item.schoolname}</td>
-                                    <td>{item.pcname}</td>
-                                    <td>{item.starttime}</td>
-                                    <td>{item.lasttime}</td>
-                                    <td>{item.totaltime}</td>
-                                    <td>{item.labnum}</td>
-                                    <td>{item.pcnum}</td>
-                                    <td>{item.eiin}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
-            <h3 className='shadow-lg p-3 mb-5 bg-white rounded text-center'>All Schools</h3>
-            <ul className="list-group">
-                {Array.from(new Set(intervalData.map(item => item.schoolname))).reverse().map((school, index) => (
-                    <li key={index} className="list-group-item list-group-item-action list-group-item-primary d-flex justify-content-between align-items-center" onClick={() => handleIntervalClick(school)}>
-                        {school} (EIIN: {intervalData.find(item => item.schoolname === school).eiin})
-                        <button className="btn btn-secondary" onClick={(e) => {
-                            e.stopPropagation(); // Prevent li onClick from firing
-                            const intervalInfo = intervalData.filter(i => i.schoolname === school);
-                            downloadCSV(intervalInfo);
-                        }}>Download Info</button>
-                    </li>
-                ))}
-            </ul>
-
-            {selectedIntervals && selectedIntervals.length > 0 && (
-                <div className="mt-4">
-                    <h3 className='shadow-lg p-3 mb-5 bg-white rounded text-center'  >Selected Interval Details</h3>
-                    <table className="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>School Name</th>
-                                <th>PC Name</th>
-                                <th>Start Time</th>
-                                <th>Last Time</th>
-                                <th>Total Time (s)</th>
-                                <th>Lab Number</th>
-                                <th>PC Number</th>
-                                <th>EIIN</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {selectedIntervals.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{index + 1}</td>
-                                    <td>{item.schoolname}</td>
-                                    <td>{item.pcname}</td>
-                                    <td>{item.starttime}</td>
-                                    <td>{item.lasttime}</td>
-                                    <td>{item.totaltime}</td>
-                                    <td>{item.labnum}</td>
-                                    <td>{item.pcnum}</td>
-                                    <td>{item.eiin}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-        </div>
+  const handleSearch = (pattern) => {
+    setQuery(pattern);
+    const filteredSchools = schools.filter(school =>
+      school.schoolNames.some(name => name.toLowerCase().includes(pattern.toLowerCase()))
     );
+    setSearchedSchools(filteredSchools);
+    setSelectedSchool(null); 
+  };
+
+  return (
+    <div className="container mt-5">
+      <input
+        type="text"
+        className="form-control mb-3"
+        placeholder="Search by school name or EIIN..."
+        value={query}
+        onChange={(e) => handleSearch(e.target.value)}
+      />
+      {searchedSchools.length > 0 ?
+        <h3 className="shadow-lg p-3 mb-5 bg-white rounded text-center">
+          Search Results
+        </h3> : <div />
+      }
+
+      <ul className="list-group mb-4">
+        {searchedSchools.length > 0 ? (
+          searchedSchools.map((school, index) => (
+            <li
+              key={index}
+              className="list-group-item list-group-item-action list-group-item-success d-flex justify-content-between align-items-center"
+            >
+              <span>
+                {school.schoolNames.join(", ")} (EIIN: {school.eiin})
+              </span>
+              <a
+                href={`${baseUrl}/export/csv/intervalinfos/${school.eiin}`}
+                className="btn btn-secondary"
+              >
+                Download Info
+              </a>
+            </li>
+          ))
+        ) : (
+          <div />
+        )}
+      </ul>
+
+      {searchedSchools.length > 0 && selectedSchool && (
+        <div className="mt-4">
+          <h3 className="shadow-lg p-3 mb-5 bg-white rounded text-center">
+            Selected School Details
+          </h3>
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>School Name</th>
+                <th>EIIN</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>{selectedSchool.schoolNames.join(", ")}</td>
+                <td>{selectedSchool.eiin}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <h3 className="shadow-lg p-3 mb-5 bg-white rounded text-center">
+        All Schools
+      </h3>
+      <ul className="list-group">
+        {schools.map((school, index) => (
+          <li
+            key={index}
+            className="list-group-item list-group-item-action list-group-item-primary d-flex justify-content-between align-items-center"
+          >
+            {school.schoolNames.join(", ")} (EIIN: {school.eiin})
+            <a
+              href={`${baseUrl}/export/csv/intervalinfos/${school.eiin}`}
+              className="btn btn-secondary"
+            >
+              Download Info
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 export default SchoolwiseInterval;

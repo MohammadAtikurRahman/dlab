@@ -31,10 +31,6 @@ function SchoolwisePC() {
     setSelectedSchool(null); // Clear selected school when search results change
   };
 
-  const handleSchoolClick = (school) => {
-    setSelectedSchool(school);
-  };
-
   return (
     <div className="container mt-5">
       <input
