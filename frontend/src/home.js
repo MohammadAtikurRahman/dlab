@@ -54,6 +54,12 @@ function Home() {
           </h5>
         </div>
         <div className="list-group text-center p-3">
+          <button
+            className="btn list-group-item list-group-item-action"
+            onClick={handleHistogramClick}
+          >
+            Histogram
+          </button>
           <hr></hr>
           <button
             className="btn list-group-item list-group-item-action"
@@ -88,12 +94,7 @@ function Home() {
 
           <hr></hr>
 
-          <button
-            className="btn list-group-item list-group-item-action"
-            onClick={handleHistogramClick}
-          >
-            Histogram
-          </button>
+
         </div>
       </div>
       <div className="main-content flex-grow-1">
