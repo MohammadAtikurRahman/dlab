@@ -48,18 +48,18 @@ class CommonController {
         {
           $group: {
             _id: null,
-            distinctSchoolNames: {$addToSet: "$schoolname"},
+            distinctSchoolEiin: {$addToSet: "$eiin"},
             distinctPcNames: {$addToSet: "$pcname"},
-            uniqueSchoolnameLabnumPairs: {$addToSet: {schoolname: "$schoolname", labnum: "$labnum"}},
+            uniqueSchooEiinLabnumPairs: {$addToSet: {eiin: "$eiin", labnum: "$labnum"}},
             totalPcUsedTime: {$sum: "$totaltime"}
           }
         },
         {
           $project: {
             _id: 0,
-            distinctSchoolCount: {$size: "$distinctSchoolNames"},
+            distinctSchoolCount: {$size: "$distinctSchoolEiin"},
             distinctPcCount: {$size: "$distinctPcNames"},
-            distinctLabCount: {$size: "$uniqueSchoolnameLabnumPairs"},
+            distinctLabCount: {$size: "$uniqueSchooEiinLabnumPairs"},
             totalPcUsedTime: 1
           }
         }
