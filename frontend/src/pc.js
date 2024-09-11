@@ -41,21 +41,9 @@ function Pc() {
   return (
     <div>
       <div className='row'>
-        <div className='col-6'>
-        <button className='btn btn-primary w-100' onClick={toggleTableVisibility} disabled={isLoading}>
-        {isLoading ? 'Loading...' : isTableVisible ? 'Hide Table' : 'Show all PC Data'}
-      </button>
-        </div>
-         <div className='col-6' >
-         {/* <button className='btn btn-danger w-100'>ALL PC Download</button> */}
-           <AllSchoolDownload/>
-         </div>
-
+        <AllSchoolDownload />
       </div>
-    
 
-
-      
       {error && <div style={{ color: 'red' }}>{error}</div>}
       {isTableVisible && pcData.length > 0 && ( // Render table only if isTableVisible is true and data is available
         <table className="table table-striped">

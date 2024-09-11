@@ -45,22 +45,7 @@ function Interval() {
   return (
     <div>
       <div className="row">
-        <div className="col-6">
-          <button
-            className="btn btn-primary w-100"
-            onClick={toggleTableVisibility}
-            disabled={isLoading}
-          >
-            {isLoading
-              ? "Loading..."
-              : isTableVisible
-                ? "Hide Interval Data"
-                : "Show Interval Data"}
-          </button>
-        </div>
-        <div className="col-6">
           <AllIntervalDownload />
-        </div>
       </div>
       {error && <div style={{color: "red"}}>{error}</div>}
       {isTableVisible && intervalData.length > 0 && (

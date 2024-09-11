@@ -37,14 +37,7 @@ function Video() {
   return (
     <div>
       <div className='row'>
-        <div className='col-6'>
-          <button className='btn btn-primary w-100' onClick={toggleTableVisibility} disabled={isLoading}>
-            {isLoading ? 'Loading...' : isTableVisible ? 'Hide Table' : 'Show all Video Data'}
-          </button>
-        </div>
-        <div className='col-6'>
          <AllVideoDownload/>
-        </div>
       </div>
       
       {error && <div style={{ color: 'red' }}>{error}</div>}
