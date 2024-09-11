@@ -3,8 +3,8 @@ const CommonController = require('../controllers/CommonController'); // Adjust t
 
 const router = express.Router();
 
-router.get('/histogram', (req, res) => {
-  return CommonController.histogram(req, res);
-});
+router.get('/histogram', CommonController.histogram);
+router.get('/export/csv/:collectionName/:eiin', CommonController.schoolWiseData);
+router.get("/schools", CommonController.uniqueSchools);
 
 module.exports = router;
